@@ -1,4 +1,5 @@
 <?php
+
 require_once __DIR__ . '/../config/database.php';
 
 class User
@@ -65,7 +66,6 @@ class User
             'role'          => $data['role'],
         ]);
     }
-
     /**
      * Cập nhật user.
      * Nếu $data['password'] không rỗng thì cập nhật lại password_hash.
@@ -106,7 +106,7 @@ class User
     public function hasProfile(int $userId): bool
     {
         $stmt = $this->db->prepare("SELECT id FROM student_profiles WHERE user_id = :id
-                                     UNION SELECT id FROM staff_profiles WHERE user_id = :id");
+                                    UNION SELECT id FROM staff_profiles WHERE user_id = :id");
         $stmt->execute(['id' => $userId]);
         return (bool) $stmt->fetch();
     }
