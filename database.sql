@@ -32,7 +32,7 @@ CREATE TABLE `applications` (
   `user_id` int(11) NOT NULL,
   `tier_id` int(11) NOT NULL,
   `profile_id` int(11) NOT NULL,
-  `status` enum('pending','reviewing','evaluated') DEFAULT 'pending',
+  `status` enum('pending','reviewing','approved','rejected') DEFAULT 'pending',
   `applied_date` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
