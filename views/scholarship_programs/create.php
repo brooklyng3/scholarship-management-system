@@ -1,0 +1,86 @@
+<?php
+require_once __DIR__ . '/../../config/database.php';
+require_once __DIR__ . '/../../helpers/functions.php';
+require_once __DIR__ . '/../../controllers/ScholarshipProgramController.php';
+
+$ctrl = new ScholarshipProgramController();
+$vars = $ctrl->create();
+extract($vars);
+
+$pageTitle = 'Thêm Chương trình Học bổng';
+require_once __DIR__ . '/../partials/header.php';
+?>
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="index.php">Chương trình HB</a></li>
+        <li class="breadcrumb-item active">Thêm mới</li>
+    </ol>
+</nav>
+
+<div class="card shadow-sm" style="max-width:620px;">
+    <div class="card-header"><strong>➕ Tạo Chương trình Học bổng</strong></div>
+    <div class="card-body">
+        <?php if (!empty($errors)): ?>
+            <div class="alert alert-danger">
+                <ul class="mb-0"><?php foreach ($errors as $err): ?><li><?= e($err) ?></li><?php endforeach; ?></ul>
+            </div>
+        <?php endif; ?>
+
+        <form method="POST">
+            <!-- title -->
+            <div class="mb-3">
+                <label class="form-label">Tên chương trình (title) <span class="text-danger">*</span></label>
+                <input type="text" name="title" class="form-control"
+                       value="<?= e($old['title'] ?? '') ?>"
+                       placeholder="VD: Học bổng Khuyến khích Học tập Kỳ Thu 2026"
+                       required>
+            </div>
+
+            <!-- scholarship_type (ENUM) -->
+            <div class="mb-3">
+                <label class="form-label">Loại học bổng (scholarship_type) <span class="text-danger">*</span></label>
+                <select name="scholarship_type" class="form-select" required>
+                    <option value="">-- Chọn loại --</option>
+                    <?php foreach ($types as $val => $label): ?>
+                        <option value="<?= e($val) ?>" <?= ($old['scholarship_type'] ?? '') === $val ? 'selected' : '' ?>>
+                            <?= e($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <!-- start_date / end_date -->
+            <div class="row">
+                <div class="col mb-3">
+                    <label class="form-label">Ngày bắt đầu (start_date)</label>
+                    <input type="date" name="start_date" class="form-control" value="<?= e($old['start_date'] ?? '') ?>">
+                </div>
+                <div class="col mb-3">
+                    <label class="form-label">Ngày kết thúc (end_date)</label>
+                    <input type="date" name="end_date" class="form-control" value="<?= e($old['end_date'] ?? '') ?>">
+                </div>
+            </div>
+            <p class="text-muted small mt-n2">⚠ end_date phải sau hoặc bằng start_date.</p>
+
+            <!-- status (ENUM) -->
+            <div class="mb-3">
+                <label class="form-label">Trạng thái (status)</label>
+                <select name="status" class="form-select">
+                    <?php foreach ($statuses as $val => $label): ?>
+                        <option value="<?= e($val) ?>" <?= ($old['status'] ?? 'draft') === $val ? 'selected' : '' ?>>
+                            <?= e($label) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Lưu</button>
+                <a href="index.php" class="btn btn-outline-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<?php require_once __DIR__ . '/../partials/footer.php'; ?>
