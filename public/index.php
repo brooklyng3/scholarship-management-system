@@ -10,6 +10,7 @@ $controllerMap = [
     'scholarship_programs' => 'ScholarshipProgramController',
     'scholarship_tiers' => 'ScholarshipTierController',
     'scoring_criteria' => 'ScoringCriteriaController',
+    'evaluation_scores' => 'EvaluationScoreController',
 ];
 
 // Check if controller exists
