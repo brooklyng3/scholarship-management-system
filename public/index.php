@@ -12,6 +12,8 @@ $controllerMap = [
     'scoring_criteria' => 'ScoringCriteriaController',
     'evaluation_scores' => 'EvaluationScoreController',
     'eligibility_rules' => 'EligibilityRuleController',
+    'applications' => 'ApplicationController',
+    'scholarship_decisions' => 'ScholarshipDecisionController',
 ];
 
 // Check if controller exists
