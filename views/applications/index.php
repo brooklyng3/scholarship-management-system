@@ -1,0 +1,125 @@
+<?php
+/**
+ * @var array $applications List of all applications
+ */
+
+$pageTitle = 'Scholarship Applications';
+require_once __DIR__ . '/../partials/header.php';
+?>
+
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2>📝 Scholarship Applications</h2>
+        <a href="index.php?controller=applications&action=create" class="btn">+ New Application</a>
+    </div>
+</div>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Student Name</th>
+                <th>Tier Name</th>
+                <th>Status</th>
+                <th>Applied Date</th>
+                <th style="text-align: center;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php if (empty($applications)): ?>
+            <tr>
+                <td colspan="6" style="text-align: center; color: #999; padding: 2rem;">
+                    No applications found.
+                </td>
+            </tr>
+        <?php else: ?>
+            <?php foreach ($applications as $app): ?>
+            <tr id="row-<?= htmlspecialchars($app['id']) ?>">
+                <td><?= htmlspecialchars($app['id']) ?></td>
+                <td><strong><?= htmlspecialchars($app['student_name']) ?></strong></td>
+                <td><?= htmlspecialchars($app['tier_name']) ?></td>
+                <td>
+                    <?php
+                    $statusClass = 'status-draft';
+                    switch ($app['status']) {
+                        case 'pending':
+                            $statusClass = 'status-draft';
+                            break;
+                        case 'reviewing':
+                            $statusClass = 'status-draft';
+                            break;
+                        case 'approved':
+                            $statusClass = 'status-active';
+                            break;
+                        case 'rejected':
+                            $statusClass = 'status-closed';
+                            break;
+                    }
+                    ?>
+                    <span class="status-badge <?= $statusClass ?>">
+                        <?= htmlspecialchars(ucfirst($app['status'])) ?>
+                    </span>
+                </td>
+                <td><?= htmlspecialchars($app['applied_date']) ?></td>
+                <td style="text-align: center;">
+                    <div class="actions">
+                        <a href="index.php?controller=applications&action=edit&id=<?= $app['id'] ?>" 
+                           class="btn btn-secondary" 
+                           style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Edit</a>
+                        <button type="button" 
+                                class="btn btn-danger delete-btn" 
+                                data-id="<?= $app['id'] ?>"
+                                style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Delete</button>
+                    </div>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        </tbody>
+    </table>
+</div>
+
+<script>
+// AJAX Delete functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const id = this.getAttribute('data-id');
+            
+            if (!confirm('Are you sure you want to delete this application?')) {
+                return;
+            }
+            
+            // Fetch API for AJAX delete
+            fetch(`index.php?controller=applications&action=delete&id=${id}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the row from the table
+                    const row = document.getElementById(`row-${id}`);
+                    if (row) {
+                        row.remove();
+                    }
+                    alert('Application deleted successfully.');
+                } else {
+                    alert('Failed to delete application: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the application.');
+            });
+        });
+    });
+});
+</script>
+
+<?php require_once __DIR__ . '/../partials/footer.php'; ?>
