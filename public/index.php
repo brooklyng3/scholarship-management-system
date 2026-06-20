@@ -28,6 +28,7 @@ $controllerMap = [
     'eligibility_rules'    => 'EligibilityRuleController',
     'scholarship_decisions' => 'ScholarshipDecisionController',
     'applications'          => 'ApplicationController',
+    'application_documents' => 'ApplicationDocumentController',
 ];
 
 // Check if controller exists
