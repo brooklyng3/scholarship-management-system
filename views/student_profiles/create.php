@@ -1,19 +1,12 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../helpers/functions.php';
-require_once __DIR__ . '/../../controllers/StudentProfileController.php';
-
-$ctrl = new StudentProfileController();
-$vars = $ctrl->create();
-extract($vars);
-
+/** Template: student_profiles/create — biến: $errors, $old, $availableUsers */
 $pageTitle = 'Thêm Hồ sơ Sinh viên';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.php">Hồ sơ Sinh viên</a></li>
+        <li class="breadcrumb-item"><a href="<?= e(url('student_profiles', 'index')) ?>">Hồ sơ Sinh viên</a></li>
         <li class="breadcrumb-item active">Thêm mới</li>
     </ol>
 </nav>
@@ -28,9 +21,10 @@ require_once __DIR__ . '/../partials/header.php';
         <?php endif; ?>
 
         <?php if (empty($availableUsers)): ?>
-            <div class="alert alert-warning">Tất cả tài khoản student đều đã có hồ sơ. <a href="../users/create.php">Tạo tài khoản mới</a> trước.</div>
+            <div class="alert alert-warning">Tất cả tài khoản student đều đã có hồ sơ. <a href="<?= e(url('users', 'create')) ?>">Tạo tài khoản mới</a> trước.</div>
         <?php else: ?>
-        <form method="POST">
+        <form method="POST" action="<?= e(url('student_profiles', 'store')) ?>">
+            <?= csrf_field() /* [NEW] */ ?>
             <div class="mb-3">
                 <label class="form-label">Tài khoản sinh viên <span class="text-danger">*</span></label>
                 <select name="user_id" class="form-select" required>
@@ -73,7 +67,7 @@ require_once __DIR__ . '/../partials/header.php';
             </div>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Lưu</button>
-                <a href="index.php" class="btn btn-outline-secondary">Hủy</a>
+                <a href="<?= e(url('student_profiles', 'index')) ?>" class="btn btn-outline-secondary">Hủy</a>
             </div>
         </form>
         <?php endif; ?>

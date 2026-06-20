@@ -1,19 +1,12 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../helpers/functions.php';
-require_once __DIR__ . '/../../controllers/StaffProfileController.php';
-
-$ctrl = new StaffProfileController();
-$vars = $ctrl->create();
-extract($vars);
-
+/** Template: staff_profiles/create — biến: $errors, $old, $availableUsers */
 $pageTitle = 'Thêm Hồ sơ Cán bộ';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.php">Hồ sơ Cán bộ</a></li>
+        <li class="breadcrumb-item"><a href="<?= e(url('staff_profiles', 'index')) ?>">Hồ sơ Cán bộ</a></li>
         <li class="breadcrumb-item active">Thêm mới</li>
     </ol>
 </nav>
@@ -28,9 +21,10 @@ require_once __DIR__ . '/../partials/header.php';
         <?php endif; ?>
 
         <?php if (empty($availableUsers)): ?>
-            <div class="alert alert-warning">Tất cả tài khoản admin/reviewer đều đã có hồ sơ cán bộ. <a href="../users/create.php">Tạo tài khoản mới</a> trước.</div>
+            <div class="alert alert-warning">Tất cả tài khoản admin/reviewer đều đã có hồ sơ cán bộ. <a href="<?= e(url('users', 'create')) ?>">Tạo tài khoản mới</a> trước.</div>
         <?php else: ?>
-        <form method="POST">
+        <form method="POST" action="<?= e(url('staff_profiles', 'store')) ?>">
+            <?= csrf_field() /* [NEW] */ ?>
             <div class="mb-3">
                 <label class="form-label">Tài khoản Admin / Reviewer <span class="text-danger">*</span></label>
                 <select name="user_id" class="form-select" required>
@@ -54,7 +48,7 @@ require_once __DIR__ . '/../partials/header.php';
             </div>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Lưu</button>
-                <a href="index.php" class="btn btn-outline-secondary">Hủy</a>
+                <a href="<?= e(url('staff_profiles', 'index')) ?>" class="btn btn-outline-secondary">Hủy</a>
             </div>
         </form>
         <?php endif; ?>

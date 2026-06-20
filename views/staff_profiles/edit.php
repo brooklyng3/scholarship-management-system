@@ -1,22 +1,12 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../helpers/functions.php';
-require_once __DIR__ . '/../../controllers/StaffProfileController.php';
-
-$id = (int)($_GET['id'] ?? 0);
-if (!$id) { header('Location: index.php'); exit; }
-
-$ctrl = new StaffProfileController();
-$vars = $ctrl->edit($id);
-extract($vars);
-
+/** Template: staff_profiles/edit — biến: $profile, $errors */
 $pageTitle = 'Sửa Hồ sơ Cán bộ';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.php">Hồ sơ Cán bộ</a></li>
+        <li class="breadcrumb-item"><a href="<?= e(url('staff_profiles', 'index')) ?>">Hồ sơ Cán bộ</a></li>
         <li class="breadcrumb-item active">Sửa: <?= e($profile['staff_code']) ?></li>
     </ol>
 </nav>
@@ -36,7 +26,8 @@ require_once __DIR__ . '/../partials/header.php';
             </div>
         <?php endif; ?>
 
-        <form method="POST">
+        <form method="POST" action="<?= e(url('staff_profiles', 'update', ['id' => $profile['id']])) ?>">
+            <?= csrf_field() /* [NEW] */ ?>
             <div class="mb-3">
                 <label class="form-label">Mã cán bộ <span class="text-danger">*</span></label>
                 <input type="text" name="staff_code" class="form-control" value="<?= e($profile['staff_code']) ?>" required>
@@ -49,7 +40,7 @@ require_once __DIR__ . '/../partials/header.php';
             </div>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Cập nhật</button>
-                <a href="index.php" class="btn btn-outline-secondary">Hủy</a>
+                <a href="<?= e(url('staff_profiles', 'index')) ?>" class="btn btn-outline-secondary">Hủy</a>
             </div>
         </form>
     </div>

@@ -1,20 +1,27 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../helpers/functions.php';
-require_once __DIR__ . '/../../controllers/StudentProfileController.php';
-
-$ctrl = new StudentProfileController();
-$vars = $ctrl->index();
-extract($vars);
-
+/** Template: student_profiles/index — biến: $profiles, $q, $pagination */
 $pageTitle = 'Hồ sơ Sinh viên';
 require_once __DIR__ . '/../partials/header.php';
+$canManage = is_logged_in() && in_array(current_user()['role'], ['admin', 'reviewer'], true); // [NEW]
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">🎓 Hồ sơ Sinh viên (student_profiles)</h4>
-    <a href="create.php" class="btn btn-primary">+ Thêm hồ sơ</a>
+    <?php if ($canManage): ?>
+        <a href="<?= e(url('student_profiles', 'create')) ?>" class="btn btn-primary">+ Thêm hồ sơ</a>
+    <?php endif; ?>
 </div>
+
+<!-- [NEW] Search box -->
+<form method="GET" action="index.php" class="row g-2 mb-3">
+    <input type="hidden" name="controller" value="student_profiles">
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control" placeholder="Tìm theo mã SV, tên, ngành..." value="<?= e($q) ?>">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Tìm</button>
+    </div>
+</form>
 
 <div class="card shadow-sm">
     <div class="card-body p-0">
@@ -54,10 +61,14 @@ require_once __DIR__ . '/../partials/header.php';
                         <td class="text-center"><?= e($p['accumulated_credits']) ?></td>
                         <td class="text-center"><?= e($p['conduct_score']) ?></td>
                         <td class="text-center">
-                            <a href="edit.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
-                            <a href="delete.php?id=<?= $p['id'] ?>"
-                               class="btn btn-sm btn-outline-danger"
-                               onclick="return confirm('Xóa hồ sơ sinh viên này?')">Xóa</a>
+                            <?php if ($canManage): ?>
+                                <a href="<?= e(url('student_profiles', 'edit', ['id' => $p['id']])) ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                <a href="<?= e(url('student_profiles', 'delete', ['id' => $p['id'], 'csrf_token' => csrf_token()])) ?>"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Xóa hồ sơ sinh viên này?')">Xóa</a>
+                            <?php else: ?>
+                                <span class="text-muted small">—</span>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -67,5 +78,7 @@ require_once __DIR__ . '/../partials/header.php';
         </div>
     </div>
 </div>
+
+<div class="mt-3"><?= $pagination ?></div>
 
 <?php require_once __DIR__ . '/../partials/footer.php'; ?>
