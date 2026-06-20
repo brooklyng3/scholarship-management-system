@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
+/**
+ * Model cho bảng `staff_profiles` (Subtype của users, role = admin/reviewer)
+ * Cột: id, user_id, staff_code, department, updated_at
+ */
 class StaffProfile
 {
     private PDO $db;
@@ -17,6 +21,36 @@ class StaffProfile
                 INNER JOIN users u ON u.id = sp.user_id
                 ORDER BY sp.id ASC";
         return $this->db->query($sql)->fetchAll();
+    }
+
+    // ============================================================
+    // [NEW] Search + Pagination support
+    // ============================================================
+
+    public function search(string $keyword, int $limit, int $offset): array
+    {
+        $sql = "SELECT sp.*, u.email, u.full_name AS user_full_name, u.role
+                FROM staff_profiles sp
+                INNER JOIN users u ON u.id = sp.user_id
+                WHERE sp.staff_code LIKE :kw OR u.full_name LIKE :kw OR sp.department LIKE :kw
+                ORDER BY sp.id ASC
+                LIMIT :limit OFFSET :offset";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':kw', '%' . $keyword . '%');
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function countSearch(string $keyword): int
+    {
+        $sql = "SELECT COUNT(*) FROM staff_profiles sp
+                INNER JOIN users u ON u.id = sp.user_id
+                WHERE sp.staff_code LIKE :kw OR u.full_name LIKE :kw OR sp.department LIKE :kw";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['kw' => '%' . $keyword . '%']);
+        return (int) $stmt->fetchColumn();
     }
 
     public function getById(int $id): array|false

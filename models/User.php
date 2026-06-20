@@ -1,7 +1,10 @@
 <?php
-
 require_once __DIR__ . '/../config/database.php';
 
+/**
+ * Model cho bảng `users` (Supertype)
+ * Cột: id, email, password_hash, full_name, role, created_at
+ */
 class User
 {
     private PDO $db;
@@ -21,6 +24,58 @@ class User
             $stmt = $this->db->query("SELECT * FROM users ORDER BY id ASC");
         }
         return $stmt->fetchAll();
+    }
+
+    // ============================================================
+    // [NEW] Search + Pagination support for the index listing page
+    // ============================================================
+
+    /** Lấy danh sách user có lọc role + tìm kiếm (tên/email) + phân trang */
+    public function search(?string $role, string $keyword, int $limit, int $offset): array
+    {
+        $sql = "SELECT * FROM users WHERE 1=1";
+        $params = [];
+
+        if ($role) {
+            $sql .= " AND role = :role";
+            $params['role'] = $role;
+        }
+        if ($keyword !== '') {
+            $sql .= " AND (full_name LIKE :kw OR email LIKE :kw)";
+            $params['kw'] = '%' . $keyword . '%';
+        }
+
+        $sql .= " ORDER BY id ASC LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $key => $val) {
+            $stmt->bindValue(':' . $key, $val);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        return $stmt->fetchAll();
+    }
+
+    /** Đếm tổng số user khớp bộ lọc, dùng để tính số trang */
+    public function countSearch(?string $role, string $keyword): int
+    {
+        $sql = "SELECT COUNT(*) FROM users WHERE 1=1";
+        $params = [];
+
+        if ($role) {
+            $sql .= " AND role = :role";
+            $params['role'] = $role;
+        }
+        if ($keyword !== '') {
+            $sql .= " AND (full_name LIKE :kw OR email LIKE :kw)";
+            $params['kw'] = '%' . $keyword . '%';
+        }
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int) $stmt->fetchColumn();
     }
 
     public function getById(int $id): array|false
@@ -66,6 +121,7 @@ class User
             'role'          => $data['role'],
         ]);
     }
+
     /**
      * Cập nhật user.
      * Nếu $data['password'] không rỗng thì cập nhật lại password_hash.
@@ -106,7 +162,7 @@ class User
     public function hasProfile(int $userId): bool
     {
         $stmt = $this->db->prepare("SELECT id FROM student_profiles WHERE user_id = :id
-                                    UNION SELECT id FROM staff_profiles WHERE user_id = :id");
+                                     UNION SELECT id FROM staff_profiles WHERE user_id = :id");
         $stmt->execute(['id' => $userId]);
         return (bool) $stmt->fetch();
     }

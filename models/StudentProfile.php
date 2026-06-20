@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
+/**
+ * Model cho bảng `student_profiles` (Subtype của users, role = student)
+ * Cột: id, user_id, student_code, full_name, major, current_gpa,
+ *      accumulated_credits, conduct_score, updated_at
+ */
 class StudentProfile
 {
     private PDO $db;
@@ -18,6 +23,35 @@ class StudentProfile
                 INNER JOIN users u ON u.id = sp.user_id
                 ORDER BY sp.id ASC";
         return $this->db->query($sql)->fetchAll();
+    }
+
+    // ============================================================
+    // [NEW] Search + Pagination support
+    // ============================================================
+
+    public function search(string $keyword, int $limit, int $offset): array
+    {
+        $sql = "SELECT sp.*, u.email
+                FROM student_profiles sp
+                INNER JOIN users u ON u.id = sp.user_id
+                WHERE sp.student_code LIKE :kw OR sp.full_name LIKE :kw OR sp.major LIKE :kw
+                ORDER BY sp.id ASC
+                LIMIT :limit OFFSET :offset";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindValue(':kw', '%' . $keyword . '%');
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function countSearch(string $keyword): int
+    {
+        $sql = "SELECT COUNT(*) FROM student_profiles
+                WHERE student_code LIKE :kw OR full_name LIKE :kw OR major LIKE :kw";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute(['kw' => '%' . $keyword . '%']);
+        return (int) $stmt->fetchColumn();
     }
 
     public function getById(int $id): array|false

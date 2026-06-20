@@ -1,28 +1,38 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../helpers/functions.php';
-require_once __DIR__ . '/../../controllers/UserController.php';
-
-$ctrl = new UserController();
-$vars = $ctrl->index();
-extract($vars);
-
+/**
+ * Template: users/index
+ * Biến truyền vào từ UserController::index(): $users, $currentRole, $q, $pagination
+ */
 $pageTitle = 'Danh sách Người dùng';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">👥 Người dùng (Users)</h4>
-    <a href="create.php" class="btn btn-primary">+ Thêm người dùng</a>
+    <?php if (is_logged_in() && current_user()['role'] === 'admin'): ?>
+        <a href="<?= e(url('users', 'create')) ?>" class="btn btn-primary">+ Thêm người dùng</a>
+    <?php endif; ?>
 </div>
+
+<!-- [NEW] Search box -->
+<form method="GET" action="index.php" class="row g-2 mb-3">
+    <input type="hidden" name="controller" value="users">
+    <input type="hidden" name="role" value="<?= e($currentRole ?? '') ?>">
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control" placeholder="Tìm theo tên hoặc email..." value="<?= e($q) ?>">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Tìm</button>
+    </div>
+</form>
 
 <!-- Lọc theo role -->
 <div class="mb-3">
     <div class="btn-group" role="group">
-        <a href="index.php" class="btn btn-outline-secondary <?= !$currentRole ? 'active' : '' ?>">Tất cả</a>
-        <a href="index.php?role=admin" class="btn btn-outline-danger <?= $currentRole === 'admin' ? 'active' : '' ?>">Admin</a>
-        <a href="index.php?role=reviewer" class="btn btn-outline-warning <?= $currentRole === 'reviewer' ? 'active' : '' ?>">Reviewer</a>
-        <a href="index.php?role=student" class="btn btn-outline-success <?= $currentRole === 'student' ? 'active' : '' ?>">Student</a>
+        <a href="<?= e(url('users', 'index', ['q' => $q])) ?>" class="btn btn-outline-secondary <?= !$currentRole ? 'active' : '' ?>">Tất cả</a>
+        <a href="<?= e(url('users', 'index', ['role' => 'admin', 'q' => $q])) ?>" class="btn btn-outline-danger <?= $currentRole === 'admin' ? 'active' : '' ?>">Admin</a>
+        <a href="<?= e(url('users', 'index', ['role' => 'reviewer', 'q' => $q])) ?>" class="btn btn-outline-warning <?= $currentRole === 'reviewer' ? 'active' : '' ?>">Reviewer</a>
+        <a href="<?= e(url('users', 'index', ['role' => 'student', 'q' => $q])) ?>" class="btn btn-outline-success <?= $currentRole === 'student' ? 'active' : '' ?>">Student</a>
     </div>
 </div>
 
@@ -58,10 +68,14 @@ require_once __DIR__ . '/../partials/header.php';
                         </td>
                         <td><?= e($u['created_at']) ?></td>
                         <td class="text-center">
-                            <a href="edit.php?id=<?= $u['id'] ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
-                            <a href="delete.php?id=<?= $u['id'] ?>"
-                               class="btn btn-sm btn-outline-danger"
-                               onclick="return confirm('Xóa người dùng này và toàn bộ dữ liệu liên quan?')">Xóa</a>
+                            <?php if (is_logged_in() && current_user()['role'] === 'admin'): ?>
+                                <a href="<?= e(url('users', 'edit', ['id' => $u['id']])) ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                <a href="<?= e(url('users', 'delete', ['id' => $u['id'], 'csrf_token' => csrf_token()])) ?>"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Xóa người dùng này và toàn bộ dữ liệu liên quan?')">Xóa</a>
+                            <?php else: ?>
+                                <span class="text-muted small">Chỉ Admin</span>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -71,5 +85,7 @@ require_once __DIR__ . '/../partials/header.php';
         </div>
     </div>
 </div>
+
+<div class="mt-3"><?= $pagination /* [NEW] pagination controls */ ?></div>
 
 <?php require_once __DIR__ . '/../partials/footer.php'; ?>

@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
+/**
+ * Model cho bảng `violation_records`
+ * "Danh sách đen" ghi nhận các lỗi vi phạm (nợ học phí, kỷ luật, nợ thư viện)
+ * Cột: id, user_id, violation_type (enum), description, recorded_date
+ */
 class ViolationRecord
 {
     public const TYPES = [
@@ -23,6 +28,46 @@ class ViolationRecord
                 INNER JOIN users u ON u.id = vr.user_id
                 ORDER BY vr.recorded_date DESC, vr.id DESC";
         return $this->db->query($sql)->fetchAll();
+    }
+
+    // ============================================================
+    // [NEW] Search (by type) + Pagination support
+    // ============================================================
+
+    public function search(string $type, int $limit, int $offset): array
+    {
+        $sql = "SELECT vr.*, u.full_name, u.email
+                FROM violation_records vr
+                INNER JOIN users u ON u.id = vr.user_id
+                WHERE 1=1";
+        $params = [];
+        if ($type !== '') {
+            $sql .= " AND vr.violation_type = :type";
+            $params['type'] = $type;
+        }
+        $sql .= " ORDER BY vr.recorded_date DESC, vr.id DESC LIMIT :limit OFFSET :offset";
+
+        $stmt = $this->db->prepare($sql);
+        foreach ($params as $k => $v) {
+            $stmt->bindValue(':' . $k, $v);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
+    public function countSearch(string $type): int
+    {
+        $sql = "SELECT COUNT(*) FROM violation_records WHERE 1=1";
+        $params = [];
+        if ($type !== '') {
+            $sql .= " AND violation_type = :type";
+            $params['type'] = $type;
+        }
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
+        return (int) $stmt->fetchColumn();
     }
 
     public function getById(int $id): array|false

@@ -1,14 +1,8 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../helpers/functions.php';
-require_once __DIR__ . '/../../controllers/ViolationRecordController.php';
-
-$ctrl = new ViolationRecordController();
-$vars = $ctrl->index();
-extract($vars);
-
+/** Template: violation_records/index — biến: $records, $types, $type, $pagination */
 $pageTitle = 'Danh sách Vi phạm';
 require_once __DIR__ . '/../partials/header.php';
+$canManage = is_logged_in() && in_array(current_user()['role'], ['admin', 'reviewer'], true); // [NEW]
 
 $typeBadge = [
     'fee_debt'     => 'danger',
@@ -19,9 +13,26 @@ $typeBadge = [
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">🚫 Danh sách Vi phạm (violation_records)</h4>
-    <a href="create.php" class="btn btn-primary">+ Thêm vi phạm</a>
+    <div class="d-flex gap-2">
+        <?php if ($canManage): ?>
+            <!-- [NEW] CSV export -->
+            <a href="<?= e(url('violation_records', 'export')) ?>" class="btn btn-outline-success">⬇ Xuất CSV</a>
+            <a href="<?= e(url('violation_records', 'create')) ?>" class="btn btn-primary">+ Thêm vi phạm</a>
+        <?php endif; ?>
+    </div>
 </div>
 <p class="text-muted small">Sinh viên có bản ghi tại đây sẽ bị loại tự động khỏi các đợt xét học bổng.</p>
+
+<!-- [NEW] Filter by type -->
+<div class="mb-3">
+    <div class="btn-group" role="group">
+        <a href="<?= e(url('violation_records', 'index')) ?>" class="btn btn-outline-secondary <?= !$type ? 'active' : '' ?>">Tất cả</a>
+        <?php foreach ($types as $val => $label): ?>
+            <a href="<?= e(url('violation_records', 'index', ['type' => $val])) ?>"
+               class="btn btn-outline-dark <?= $type === $val ? 'active' : '' ?>"><?= e($label) ?></a>
+        <?php endforeach; ?>
+    </div>
+</div>
 
 <div class="card shadow-sm">
     <div class="card-body p-0">
@@ -55,10 +66,14 @@ $typeBadge = [
                         <td><?= e($r['description']) ?></td>
                         <td><?= e($r['recorded_date']) ?></td>
                         <td class="text-center">
-                            <a href="edit.php?id=<?= $r['id'] ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
-                            <a href="delete.php?id=<?= $r['id'] ?>"
-                               class="btn btn-sm btn-outline-danger"
-                               onclick="return confirm('Xóa bản ghi vi phạm này?')">Xóa</a>
+                            <?php if ($canManage): ?>
+                                <a href="<?= e(url('violation_records', 'edit', ['id' => $r['id']])) ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                <a href="<?= e(url('violation_records', 'delete', ['id' => $r['id'], 'csrf_token' => csrf_token()])) ?>"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Xóa bản ghi vi phạm này?')">Xóa</a>
+                            <?php else: ?>
+                                <span class="text-muted small">—</span>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -68,5 +83,7 @@ $typeBadge = [
         </div>
     </div>
 </div>
+
+<div class="mt-3"><?= $pagination ?></div>
 
 <?php require_once __DIR__ . '/../partials/footer.php'; ?>
