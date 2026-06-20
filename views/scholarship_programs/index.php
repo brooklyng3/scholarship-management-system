@@ -1,22 +1,37 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../helpers/functions.php';
-require_once __DIR__ . '/../../controllers/ScholarshipProgramController.php';
-
-$ctrl = new ScholarshipProgramController();
-$vars = $ctrl->index();
-extract($vars);
-
+/** Template: scholarship_programs/index — biến: $programs, $types, $statuses, $q, $status, $pagination */
 $pageTitle = 'Chương trình Học bổng';
 require_once __DIR__ . '/../partials/header.php';
+$isAdmin = is_logged_in() && current_user()['role'] === 'admin'; // [NEW]
 
 $statusBadge = ['draft' => 'secondary', 'active' => 'success', 'closed' => 'dark'];
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h4 class="mb-0">🏆 Chương trình Học bổng (scholarship_programs)</h4>
-    <a href="create.php" class="btn btn-primary">+ Thêm chương trình</a>
+    <?php if ($isAdmin): ?>
+        <a href="<?= e(url('scholarship_programs', 'create')) ?>" class="btn btn-primary">+ Thêm chương trình</a>
+    <?php endif; ?>
 </div>
+
+<!-- [NEW] Search + filter -->
+<form method="GET" action="index.php" class="row g-2 mb-3">
+    <input type="hidden" name="controller" value="scholarship_programs">
+    <div class="col-auto">
+        <input type="text" name="q" class="form-control" placeholder="Tìm theo tên chương trình..." value="<?= e($q) ?>">
+    </div>
+    <div class="col-auto">
+        <select name="status" class="form-select">
+            <option value="">-- Tất cả trạng thái --</option>
+            <?php foreach ($statuses as $val => $label): ?>
+                <option value="<?= e($val) ?>" <?= $status === $val ? 'selected' : '' ?>><?= e($label) ?></option>
+            <?php endforeach; ?>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-secondary">Lọc</button>
+    </div>
+</form>
 
 <div class="card shadow-sm">
     <div class="card-body p-0">
@@ -50,10 +65,14 @@ $statusBadge = ['draft' => 'secondary', 'active' => 'success', 'closed' => 'dark
                             </span>
                         </td>
                         <td class="text-center">
-                            <a href="edit.php?id=<?= $p['id'] ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
-                            <a href="delete.php?id=<?= $p['id'] ?>"
-                               class="btn btn-sm btn-outline-danger"
-                               onclick="return confirm('Xóa chương trình học bổng này?')">Xóa</a>
+                            <?php if ($isAdmin): ?>
+                                <a href="<?= e(url('scholarship_programs', 'edit', ['id' => $p['id']])) ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+                                <a href="<?= e(url('scholarship_programs', 'delete', ['id' => $p['id'], 'csrf_token' => csrf_token()])) ?>"
+                                   class="btn btn-sm btn-outline-danger"
+                                   onclick="return confirm('Xóa chương trình học bổng này?')">Xóa</a>
+                            <?php else: ?>
+                                <span class="text-muted small">—</span>
+                            <?php endif; ?>
                         </td>
                     </tr>
                     <?php endforeach; ?>
@@ -63,5 +82,7 @@ $statusBadge = ['draft' => 'secondary', 'active' => 'success', 'closed' => 'dark
         </div>
     </div>
 </div>
+
+<div class="mt-3"><?= $pagination ?></div>
 
 <?php require_once __DIR__ . '/../partials/footer.php'; ?>

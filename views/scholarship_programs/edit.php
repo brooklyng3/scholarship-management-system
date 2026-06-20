@@ -1,22 +1,12 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../helpers/functions.php';
-require_once __DIR__ . '/../../controllers/ScholarshipProgramController.php';
-
-$id = (int)($_GET['id'] ?? 0);
-if (!$id) { header('Location: index.php'); exit; }
-
-$ctrl = new ScholarshipProgramController();
-$vars = $ctrl->edit($id);
-extract($vars);
-
+/** Template: scholarship_programs/edit — biến: $program, $errors, $types, $statuses */
 $pageTitle = 'Sửa Chương trình Học bổng';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.php">Chương trình HB</a></li>
+        <li class="breadcrumb-item"><a href="<?= e(url('scholarship_programs', 'index')) ?>">Chương trình HB</a></li>
         <li class="breadcrumb-item active">Sửa #<?= e($program['id']) ?></li>
     </ol>
 </nav>
@@ -30,7 +20,9 @@ require_once __DIR__ . '/../partials/header.php';
             </div>
         <?php endif; ?>
 
-        <form method="POST">
+        <form method="POST" action="<?= e(url('scholarship_programs', 'update', ['id' => $program['id']])) ?>">
+            <?= csrf_field() /* [NEW] */ ?>
+
             <!-- title -->
             <div class="mb-3">
                 <label class="form-label">Tên chương trình (title) <span class="text-danger">*</span></label>
@@ -77,7 +69,7 @@ require_once __DIR__ . '/../partials/header.php';
 
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Cập nhật</button>
-                <a href="index.php" class="btn btn-outline-secondary">Hủy</a>
+                <a href="<?= e(url('scholarship_programs', 'index')) ?>" class="btn btn-outline-secondary">Hủy</a>
             </div>
         </form>
     </div>
