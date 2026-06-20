@@ -1,22 +1,12 @@
 <?php
-require_once __DIR__ . '/../../config/database.php';
-require_once __DIR__ . '/../../helpers/functions.php';
-require_once __DIR__ . '/../../controllers/UserController.php';
-
-$id = (int)($_GET['id'] ?? 0);
-if (!$id) { header('Location: index.php'); exit; }
-
-$ctrl = new UserController();
-$vars = $ctrl->edit($id);
-extract($vars);
-
+/** Template: users/edit — biến: $user, $errors */
 $pageTitle = 'Sửa Người dùng';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="index.php">Người dùng</a></li>
+        <li class="breadcrumb-item"><a href="<?= e(url('users', 'index')) ?>">Người dùng</a></li>
         <li class="breadcrumb-item active">Sửa #<?= e($user['id']) ?></li>
     </ol>
 </nav>
@@ -34,7 +24,8 @@ require_once __DIR__ . '/../partials/header.php';
             </div>
         <?php endif; ?>
 
-        <form method="POST">
+        <form method="POST" action="<?= e(url('users', 'update', ['id' => $user['id']])) ?>">
+            <?= csrf_field() /* [NEW] */ ?>
             <div class="mb-3">
                 <label class="form-label">Họ tên <span class="text-danger">*</span></label>
                 <input type="text" name="full_name" class="form-control" value="<?= e($user['full_name']) ?>" required>
@@ -57,7 +48,7 @@ require_once __DIR__ . '/../partials/header.php';
             </div>
             <div class="d-flex gap-2">
                 <button type="submit" class="btn btn-primary">Cập nhật</button>
-                <a href="index.php" class="btn btn-outline-secondary">Hủy</a>
+                <a href="<?= e(url('users', 'index')) ?>" class="btn btn-outline-secondary">Hủy</a>
             </div>
         </form>
     </div>
