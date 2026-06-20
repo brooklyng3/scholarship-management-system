@@ -1,0 +1,13 @@
+# Ignore Kiro steering and prompt folders
+.kiro/
+
+# Ignore assignment documents and rubrics
+Rubic_Final_Exam.docx
+Sample.doc
+
+# Ignore migration and exam markdown guides
+PHP-MVC-Migration-Guide.md
+INS3064*.md
+
+# Ignore the exported presentation web document
+presentation-guide*
