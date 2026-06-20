@@ -1,4 +1,8 @@
 <?php
+/**
+ * Database connection (PDO)
+ * Database: scholarship_system (xem file database.sql)
+ */
 
 class Database
 {
