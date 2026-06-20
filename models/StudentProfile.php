@@ -34,11 +34,14 @@ class StudentProfile
         $sql = "SELECT sp.*, u.email
                 FROM student_profiles sp
                 INNER JOIN users u ON u.id = sp.user_id
-                WHERE sp.student_code LIKE :kw OR sp.full_name LIKE :kw OR sp.major LIKE :kw
+                WHERE sp.student_code LIKE :kw1 OR sp.full_name LIKE :kw2 OR sp.major LIKE :kw3
                 ORDER BY sp.id ASC
                 LIMIT :limit OFFSET :offset";
+        $kw = '%' . $keyword . '%';
         $stmt = $this->db->prepare($sql);
-        $stmt->bindValue(':kw', '%' . $keyword . '%');
+        $stmt->bindValue(':kw1', $kw);
+        $stmt->bindValue(':kw2', $kw);
+        $stmt->bindValue(':kw3', $kw);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
@@ -48,9 +51,10 @@ class StudentProfile
     public function countSearch(string $keyword): int
     {
         $sql = "SELECT COUNT(*) FROM student_profiles
-                WHERE student_code LIKE :kw OR full_name LIKE :kw OR major LIKE :kw";
+                WHERE student_code LIKE :kw1 OR full_name LIKE :kw2 OR major LIKE :kw3";
+        $kw = '%' . $keyword . '%';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['kw' => '%' . $keyword . '%']);
+        $stmt->execute(['kw1' => $kw, 'kw2' => $kw, 'kw3' => $kw]);
         return (int) $stmt->fetchColumn();
     }
 

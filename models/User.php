@@ -41,8 +41,9 @@ class User
             $params['role'] = $role;
         }
         if ($keyword !== '') {
-            $sql .= " AND (full_name LIKE :kw OR email LIKE :kw)";
-            $params['kw'] = '%' . $keyword . '%';
+            $sql .= " AND (full_name LIKE :kw1 OR email LIKE :kw2)";
+            $params['kw1'] = '%' . $keyword . '%';
+            $params['kw2'] = '%' . $keyword . '%';
         }
 
         $sql .= " ORDER BY id ASC LIMIT :limit OFFSET :offset";
@@ -69,8 +70,9 @@ class User
             $params['role'] = $role;
         }
         if ($keyword !== '') {
-            $sql .= " AND (full_name LIKE :kw OR email LIKE :kw)";
-            $params['kw'] = '%' . $keyword . '%';
+            $sql .= " AND (full_name LIKE :kw1 OR email LIKE :kw2)";
+            $params['kw1'] = '%' . $keyword . '%';
+            $params['kw2'] = '%' . $keyword . '%';
         }
 
         $stmt = $this->db->prepare($sql);

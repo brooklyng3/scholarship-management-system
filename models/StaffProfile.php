@@ -32,11 +32,14 @@ class StaffProfile
         $sql = "SELECT sp.*, u.email, u.full_name AS user_full_name, u.role
                 FROM staff_profiles sp
                 INNER JOIN users u ON u.id = sp.user_id
-                WHERE sp.staff_code LIKE :kw OR u.full_name LIKE :kw OR sp.department LIKE :kw
+                WHERE sp.staff_code LIKE :kw1 OR u.full_name LIKE :kw2 OR sp.department LIKE :kw3
                 ORDER BY sp.id ASC
                 LIMIT :limit OFFSET :offset";
+        $kw = '%' . $keyword . '%';
         $stmt = $this->db->prepare($sql);
-        $stmt->bindValue(':kw', '%' . $keyword . '%');
+        $stmt->bindValue(':kw1', $kw);
+        $stmt->bindValue(':kw2', $kw);
+        $stmt->bindValue(':kw3', $kw);
         $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
         $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
         $stmt->execute();
@@ -47,9 +50,10 @@ class StaffProfile
     {
         $sql = "SELECT COUNT(*) FROM staff_profiles sp
                 INNER JOIN users u ON u.id = sp.user_id
-                WHERE sp.staff_code LIKE :kw OR u.full_name LIKE :kw OR sp.department LIKE :kw";
+                WHERE sp.staff_code LIKE :kw1 OR u.full_name LIKE :kw2 OR sp.department LIKE :kw3";
+        $kw = '%' . $keyword . '%';
         $stmt = $this->db->prepare($sql);
-        $stmt->execute(['kw' => '%' . $keyword . '%']);
+        $stmt->execute(['kw1' => $kw, 'kw2' => $kw, 'kw3' => $kw]);
         return (int) $stmt->fetchColumn();
     }
 
