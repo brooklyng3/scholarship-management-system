@@ -33,6 +33,13 @@ $pageTitle = $pageTitle ?? 'Cụm 1 - Hệ thống & User';
                 <li class="nav-item"><a class="nav-link" href="<?= e(url('staff_profiles', 'index')) ?>">Hồ sơ Cán bộ</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= e(url('violation_records', 'index')) ?>">Danh sách Vi phạm</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= e(url('scholarship_programs', 'index')) ?>">Chương trình HB</a></li>
+                <!-- Cụm 2 & 3 Links -->
+                <li class="nav-item"><a class="nav-link" href="<?= e(url('scholarship_tiers', 'index')) ?>">Tiers</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= e(url('eligibility_rules', 'index')) ?>">Rules</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= e(url('applications', 'index')) ?>">Applications</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= e(url('scholarship_decisions', 'index')) ?>">Decisions</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= e(url('scoring_criteria', 'index')) ?>">Criteria</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= e(url('evaluation_scores', 'index')) ?>">Scores</a></li>
             </ul>
             <!-- [NEW] Login state / user menu -->
             <ul class="navbar-nav">
