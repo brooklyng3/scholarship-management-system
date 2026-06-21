@@ -1,11 +1,15 @@
 <?php
-$pageTitle = 'Đăng nhập';
+/**
+ * Login View
+ * @var array $errors
+ */
+$pageTitle = 'Login';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <div class="d-flex justify-content-center">
-    <div class="card shadow-sm mt-4" style="max-width:420px; width:100%;">
-        <div class="card-header"><strong>🔐 Đăng nhập hệ thống</strong></div>
+    <div class="card shadow-sm mt-4" style="max-width: 400px; width: 100%;">
+        <div class="card-header text-center"><strong>🔐 System Login</strong></div>
         <div class="card-body">
             <?php if (!empty($errors)): ?>
                 <div class="alert alert-danger">
@@ -13,22 +17,18 @@ require_once __DIR__ . '/../partials/header.php';
                 </div>
             <?php endif; ?>
 
-            <form method="POST" action="<?= e(url('auth', 'doLogin')) ?>">
-                <?= csrf_field() /* [NEW] CSRF token */ ?>
+            <form action="<?= e(url('auth', 'doLogin')) ?>" method="POST">
+                <?= csrf_field() ?>
                 <div class="mb-3">
-                    <label class="form-label">Email</label>
-                    <input type="email" name="email" class="form-control" required autofocus>
+                    <label for="email" class="form-label">Email address</label>
+                    <input type="email" name="email" class="form-control" id="email" required autofocus>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Mật khẩu</label>
-                    <input type="password" name="password" class="form-control" required>
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control" id="password" required>
                 </div>
-                <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>
+                <button type="submit" class="btn btn-primary w-100">Login</button>
             </form>
-            <p class="text-muted small mt-3 mb-0">
-                Tài khoản lấy từ bảng <code>users</code>. Mật khẩu được đối chiếu bằng <code>password_verify()</code>
-                với cột <code>password_hash</code>.
-            </p>
         </div>
     </div>
 </div>
