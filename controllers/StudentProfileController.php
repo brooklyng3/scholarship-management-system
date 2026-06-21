@@ -14,6 +14,8 @@ class StudentProfileController
 
     public function index(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
+
         // [NEW] search + pagination
         $q = trim($_GET['q'] ?? '');
         $p = paginate_params(10);

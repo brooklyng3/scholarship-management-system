@@ -20,6 +20,8 @@ class UserController
     /** GET index.php?controller=users&action=index */
     public function index(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
+
         $role = $_GET['role'] ?? null;
         $role = in_array($role, ['admin', 'student', 'reviewer'], true) ? $role : null;
 

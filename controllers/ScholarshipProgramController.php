@@ -19,6 +19,8 @@ class ScholarshipProgramController
 
     public function index(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
+
         // [NEW] search by title + filter by status + pagination
         $q = trim($_GET['q'] ?? '');
         $status = $_GET['status'] ?? '';

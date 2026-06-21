@@ -14,6 +14,8 @@ class ViolationRecordController
 
     public function index(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
+
         // [NEW] filter by type + pagination
         $type = $_GET['type'] ?? '';
         $type = array_key_exists($type, ViolationRecord::TYPES) ? $type : '';
