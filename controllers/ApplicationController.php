@@ -41,7 +41,7 @@ class ApplicationController
      */
     public function create(): void
     {
-        require_role(['admin', 'reviewer', 'student']); 
+        require_role(['admin', 'student']); 
         
         $currentUser = current_user();
         $isStudent = ($currentUser['role'] === 'student');
@@ -71,7 +71,7 @@ class ApplicationController
      */
     public function store(): void
     {
-        require_role(['admin', 'reviewer', 'student']); // Students can create applications
+        require_role(['admin', 'student']); // Students can create applications
         
         $currentUser = current_user();
         $isStudent = ($currentUser['role'] === 'student');

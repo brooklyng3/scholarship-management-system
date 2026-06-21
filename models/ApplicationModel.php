@@ -13,7 +13,7 @@ class ApplicationModel
     }
 
     /**
-     * Get all applications with JOINs to fetch student name and tier name
+     * Get all applications with JOINs to fetch student name, tier name, and scholarship program title
      * @return array List of all applications
      */
     public function getAll(): array
@@ -26,10 +26,12 @@ class ApplicationModel
                 a.status,
                 a.applied_date,
                 u.full_name as student_name,
-                st.tier_name
+                st.tier_name,
+                sp.title as program_title
             FROM applications a
             INNER JOIN users u ON a.user_id = u.id
             INNER JOIN scholarship_tiers st ON a.tier_id = st.id
+            INNER JOIN scholarship_programs sp ON st.program_id = sp.id
             ORDER BY a.id DESC
         ");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -51,7 +53,7 @@ class ApplicationModel
     }
 
     /**
-     * Get all applications for a specific user (student)
+     * Get all applications for a specific user (student) with program title details
      * @param int $userId User ID
      * @return array List of applications for the user
      */
@@ -65,10 +67,12 @@ class ApplicationModel
                 a.status,
                 a.applied_date,
                 u.full_name as student_name,
-                st.tier_name
+                st.tier_name,
+                sp.title as program_title
             FROM applications a
             INNER JOIN users u ON a.user_id = u.id
             INNER JOIN scholarship_tiers st ON a.tier_id = st.id
+            INNER JOIN scholarship_programs sp ON st.program_id = sp.id
             WHERE a.user_id = ?
             ORDER BY a.id DESC
         ");

@@ -7,11 +7,12 @@ $pageTitle = 'Scholarship Applications';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
-<div style="margin-bottom: 2rem;">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2>📝 Scholarship Applications</h2>
-        <a href="index.php?controller=applications&action=create" class="btn">+ New Application</a>
-    </div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">📝 Scholarship Applications</h4>
+    
+    <?php if (isset($currentUser) && $currentUser['role'] !== 'reviewer'): ?>
+        <a href="index.php?controller=applications&action=create" class="btn btn-primary">+ New Application</a>
+    <?php endif; ?>
 </div>
 
 <div class="card">
@@ -20,10 +21,10 @@ require_once __DIR__ . '/../partials/header.php';
             <tr>
                 <th>ID</th>
                 <th>Student Name</th>
-                <th>Tier Name</th>
+                <th>Scholarship Program</th> <th>Tier Name</th>
                 <th>Status</th>
                 <th>Applied Date</th>
-                <th style="text-align: center;">Actions</th>
+                <th class="text-center">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -38,7 +39,7 @@ require_once __DIR__ . '/../partials/header.php';
             <tr id="row-<?= htmlspecialchars($app['id']) ?>">
                 <td><?= htmlspecialchars($app['id']) ?></td>
                 <td><strong><?= htmlspecialchars($app['student_name']) ?></strong></td>
-                <td><?= htmlspecialchars($app['tier_name']) ?></td>
+                <td><?= htmlspecialchars($app['program_title']) ?></td> <td><?= htmlspecialchars($app['tier_name']) ?></td>
                 <td>
                     <?php
                     $statusClass = 'status-draft';
