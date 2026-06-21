@@ -1,5 +1,10 @@
 <?php
-/** Template: violation_records/index — biến: $records, $types, $type, $pagination */
+/** * Template: violation_records/index
+ * * @var array $records
+ * @var array $types
+ * @var string $type
+ * @var string $pagination
+ */
 $pageTitle = 'Danh sách Vi phạm';
 require_once __DIR__ . '/../partials/header.php';
 $canManage = is_logged_in() && in_array(current_user()['role'], ['admin', 'reviewer'], true); // [NEW]

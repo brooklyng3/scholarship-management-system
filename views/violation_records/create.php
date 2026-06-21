@@ -1,5 +1,10 @@
 <?php
-/** Template: violation_records/create — biến: $errors, $old, $users, $types */
+/**
+ * @var array $errors
+ * @var array $old
+ * @var array $users
+ * @var array $types
+ */
 $pageTitle = 'Thêm Vi phạm';
 require_once __DIR__ . '/../partials/header.php';
 ?>

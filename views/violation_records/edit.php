@@ -1,5 +1,10 @@
 <?php
-/** Template: violation_records/edit — biến: $record, $errors, $users, $types */
+/**
+ * @var array $record
+ * @var array $errors
+ * @var array $users
+ * @var array $types
+ */
 $pageTitle = 'Sửa Vi phạm';
 require_once __DIR__ . '/../partials/header.php';
 ?>
