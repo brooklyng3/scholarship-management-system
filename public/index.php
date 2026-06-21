@@ -29,6 +29,8 @@ $controllerMap = [
     'scholarship_decisions' => 'ScholarshipDecisionController',
     'applications'          => 'ApplicationController',
     'application_documents' => 'ApplicationDocumentController', // [NEW] Document upload module
+    'disbursement'          => 'DisbursementController',
+    'award_certificate'     => 'AwardCertificateController',
 ];
 
 // Check if controller exists
