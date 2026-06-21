@@ -40,6 +40,7 @@ $pageTitle = $pageTitle ?? 'Cụm 1 - Hệ thống & User';
                 <li class="nav-item"><a class="nav-link" href="<?= e(url('scholarship_decisions', 'index')) ?>">Decisions</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= e(url('scoring_criteria', 'index')) ?>">Criteria</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= e(url('evaluation_scores', 'index')) ?>">Scores</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= e(url('application_documents', 'index')) ?>">App Documents</a></li>
             </ul>
             <!-- [NEW] Login state / user menu -->
             <ul class="navbar-nav">

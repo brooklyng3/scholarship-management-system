@@ -28,7 +28,7 @@ $controllerMap = [
     'eligibility_rules'    => 'EligibilityRuleController',
     'scholarship_decisions' => 'ScholarshipDecisionController',
     'applications'          => 'ApplicationController',
-    'application_documents' => 'ApplicationDocumentController',
+    'application_documents' => 'ApplicationDocumentController', // [NEW] Document upload module
 ];
 
 // Check if controller exists
