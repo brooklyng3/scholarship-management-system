@@ -161,21 +161,46 @@ class ApplicationModel
     }
 
     /**
-     * Get all scholarship tiers
-     * @return array List of scholarship tiers
+     * Get scholarship tiers with optional status filtering
+     * @param bool $onlyOpen If true, only returns tiers from open programs
+     * @return array
      */
-    public function getAllTiers(): array
+    public function getAllTiers(bool $onlyOpen = false): array
     {
-        $stmt = $this->pdo->query("
+        $sql = "
             SELECT 
                 st.id, 
                 st.tier_name,
                 sp.title as program_title
             FROM scholarship_tiers st
             INNER JOIN scholarship_programs sp ON st.program_id = sp.id
-            ORDER BY sp.title, st.tier_name
+        ";
+        
+        // Enforce the 'open' status filter if requested
+        if ($onlyOpen) {
+            $sql .= " WHERE sp.status = 'active' ";
+        }
+        
+        $sql .= " ORDER BY sp.title, st.tier_name";
+        
+        return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Verify if a specific tier belongs to an active/open program
+     * @param int $tierId
+     * @return bool
+     */
+    public function isTierAvailable(int $tierId): bool
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT COUNT(*) 
+            FROM scholarship_tiers st
+            INNER JOIN scholarship_programs sp ON st.program_id = sp.id
+            WHERE st.id = ? AND sp.status = 'open'
         ");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->execute([$tierId]);
+        return (int)$stmt->fetchColumn() > 0;
     }
 
     /**

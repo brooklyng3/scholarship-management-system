@@ -46,19 +46,20 @@ class ApplicationController
         $currentUser = current_user();
         $isStudent = ($currentUser['role'] === 'student');
         
-        // FIX: Populate $students even for students, so the dropdown renders
         if ($isStudent) {
-            // Create a single-item array matching the structure of getAllStudents()
             $students = [[
                 'id' => $currentUser['id'],
-                'full_name' => $currentUser['full_name'], // Ensure this key matches your user session data
+                'full_name' => $currentUser['full_name'], 
                 'email' => $currentUser['email']
             ]];
         } else {
             $students = $this->model->getAllStudents();
         }
         
-        $tiers = $this->model->getAllTiers();
+        // FIX: Pass the $isStudent flag. 
+        // Students only see 'open' programs, Admins/Reviewers can see all for management.
+        $tiers = $this->model->getAllTiers($isStudent); 
+        
         $errors = [];
         $old = [];
         
@@ -102,6 +103,11 @@ class ApplicationController
         // Check for duplicate application
         if (empty($errors) && $this->model->hasApplied($data['user_id'], $data['tier_id'])) {
             $errors[] = "This student has already applied to this scholarship tier.";
+        }
+
+        // FIX: Backend defense check against tampering parameter manipulation
+        if (empty($errors) && !$this->model->isTierAvailable($data['tier_id'])) {
+            $errors[] = "The selected scholarship program is currently draft or unavailable.";
         }
 
         // Validate file upload
