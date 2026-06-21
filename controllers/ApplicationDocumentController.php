@@ -201,20 +201,14 @@ class ApplicationDocumentController
     }
 
     /**
-     * View documents for an application (staff only)
+     * View documents for an application
      */
     public function index(): void
     {
-        require_role(['admin', 'reviewer', 'staff']);
+        require_role(['admin', 'reviewer', 'staff', 'student']);
         
         $currentUser = current_user();
-        
-        // Students cannot view their uploaded documents
-        if ($currentUser['role'] === 'student') {
-            set_flash('error', 'Students cannot view uploaded documents.');
-            redirect(url('applications', 'index'));
-            return;
-        }
+        $isStudent = ($currentUser['role'] === 'student');
         
         $applicationId = (int)($_GET['application_id'] ?? 0);
         
@@ -230,6 +224,16 @@ class ApplicationDocumentController
             set_flash('error', 'Application not found.');
             redirect(url('applications', 'index'));
             return;
+        }
+        
+        // Students can only view documents for their own applications
+        if ($isStudent) {
+            $ownerId = $this->model->getApplicationOwnerId($applicationId);
+            if ($ownerId !== (int)$currentUser['id']) {
+                set_flash('error', 'You do not have permission to view these documents.');
+                redirect(url('applications', 'index'));
+                return;
+            }
         }
         
         $documents = $this->model->getByApplicationId($applicationId);

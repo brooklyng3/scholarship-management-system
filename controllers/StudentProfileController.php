@@ -14,19 +14,29 @@ class StudentProfileController
 
     public function index(): void
     {
-        require_role(['admin', 'reviewer', 'staff']);
+        require_role(['admin', 'reviewer', 'staff', 'student']);
+
+        $currentUser = current_user();
+        $isStudent = ($currentUser['role'] === 'student');
 
         // [NEW] search + pagination
         $q = trim($_GET['q'] ?? '');
         $p = paginate_params(10);
 
-        $profiles = $this->model->search($q, $p['perPage'], $p['offset']);
-        $total = $this->model->countSearch($q);
+        // Students can only view their own profile
+        if ($isStudent) {
+            $profiles = $this->model->getByUserId((int)$currentUser['id']);
+            $profiles = $profiles ? [$profiles] : [];
+            $total = count($profiles);
+        } else {
+            $profiles = $this->model->search($q, $p['perPage'], $p['offset']);
+            $total = $this->model->countSearch($q);
+        }
 
         $this->render('student_profiles/index', [
             'profiles'   => $profiles,
             'q'          => $q,
-            'pagination' => render_pagination($p['page'], $total, $p['perPage'], 'student_profiles', ['q' => $q]),
+            'pagination' => $isStudent ? '' : render_pagination($p['page'], $total, $p['perPage'], 'student_profiles', ['q' => $q]),
         ]);
     }
 
@@ -69,7 +79,10 @@ class StudentProfileController
 
     public function edit(): void
     {
-        require_role(['admin', 'reviewer']); // [NEW]
+        require_role(['admin', 'reviewer', 'student']); // Students can edit their own profile
+
+        $currentUser = current_user();
+        $isStudent = ($currentUser['role'] === 'student');
 
         $id = (int)($_GET['id'] ?? 0);
         $profile = $this->model->getById($id);
@@ -78,18 +91,33 @@ class StudentProfileController
             redirect(url('student_profiles', 'index'));
         }
 
+        // Students can only edit their own profile
+        if ($isStudent && (int)$profile['user_id'] !== (int)$currentUser['id']) {
+            set_flash('error', 'You do not have permission to edit this profile.');
+            redirect(url('student_profiles', 'index'));
+        }
+
         $this->render('student_profiles/edit', ['profile' => $profile, 'errors' => []]);
     }
 
     public function update(): void
     {
-        require_role(['admin', 'reviewer']); // [NEW]
-        verify_csrf();                       // [NEW]
+        require_role(['admin', 'reviewer', 'student']); // Students can update their own profile
+        verify_csrf();                                  // [NEW]
+
+        $currentUser = current_user();
+        $isStudent = ($currentUser['role'] === 'student');
 
         $id = (int)($_GET['id'] ?? 0);
         $profile = $this->model->getById($id);
         if (!$profile) {
             set_flash('error', 'Student profile not found.');
+            redirect(url('student_profiles', 'index'));
+        }
+
+        // Students can only update their own profile
+        if ($isStudent && (int)$profile['user_id'] !== (int)$currentUser['id']) {
+            set_flash('error', 'You do not have permission to update this profile.');
             redirect(url('student_profiles', 'index'));
         }
 

@@ -19,7 +19,7 @@ class ScholarshipProgramController
 
     public function index(): void
     {
-        require_role(['admin', 'reviewer', 'staff', 'student']);
+        require_role(['admin', 'reviewer', 'staff', 'student']); // Students can view programs
 
         // [NEW] search by title + filter by status + pagination
         $q = trim($_GET['q'] ?? '');
@@ -37,6 +37,24 @@ class ScholarshipProgramController
             'q'          => $q,
             'status'     => $status,
             'pagination' => render_pagination($p['page'], $total, $p['perPage'], 'scholarship_programs', ['q' => $q, 'status' => $status]),
+        ]);
+    }
+
+    public function show(): void
+    {
+        require_role(['admin', 'reviewer', 'staff', 'student']); // Students can view program details
+
+        $id = (int)($_GET['id'] ?? 0);
+        $program = $this->model->getById($id);
+        if (!$program) {
+            set_flash('error', 'Không tìm thấy chương trình học bổng.');
+            redirect(url('scholarship_programs', 'index'));
+        }
+
+        $this->render('scholarship_programs/show', [
+            'program'  => $program,
+            'types'    => ScholarshipProgram::TYPES,
+            'statuses' => ScholarshipProgram::STATUSES,
         ]);
     }
 

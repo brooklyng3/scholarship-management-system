@@ -18,8 +18,18 @@ class ApplicationController
      */
     public function index(): void
     {
-        require_role(['admin', 'reviewer', 'staff']);
-        $applications = $this->model->getAll();
+        require_role(['admin', 'reviewer', 'staff', 'student']);
+        
+        $currentUser = current_user();
+        $isStudent = ($currentUser['role'] === 'student');
+        
+        // Students can only view their own applications
+        if ($isStudent) {
+            $applications = $this->model->getByUserId((int)$currentUser['id']);
+        } else {
+            $applications = $this->model->getAll();
+        }
+        
         require __DIR__ . '/../views/applications/index.php';
     }
 
@@ -28,8 +38,18 @@ class ApplicationController
      */
     public function create(): void
     {
-        require_role(['admin', 'reviewer']);
-        $students = $this->model->getAllStudents();
+        require_role(['admin', 'reviewer', 'student']); // Students can create their own applications
+        
+        $currentUser = current_user();
+        $isStudent = ($currentUser['role'] === 'student');
+        
+        // For students, pre-populate with their own user_id
+        if ($isStudent) {
+            $students = []; // Students don't need to see other students
+        } else {
+            $students = $this->model->getAllStudents();
+        }
+        
         $tiers = $this->model->getAllTiers();
         $errors = [];
         $old = [];
@@ -42,12 +62,16 @@ class ApplicationController
      */
     public function store(): void
     {
-        require_role(['admin', 'reviewer']);
+        require_role(['admin', 'reviewer', 'student']); // Students can create applications
+        
+        $currentUser = current_user();
+        $isStudent = ($currentUser['role'] === 'student');
+        
         // Read and sanitize input
         $data = [
-            'user_id' => (int)($_POST['user_id'] ?? 0),
+            'user_id' => $isStudent ? (int)$currentUser['id'] : (int)($_POST['user_id'] ?? 0), // Force student's own ID
             'tier_id' => (int)($_POST['tier_id'] ?? 0),
-            'status' => trim($_POST['status'] ?? 'pending'),
+            'status' => $isStudent ? 'pending' : trim($_POST['status'] ?? 'pending'), // Students can only create pending applications
         ];
 
         // Validate required fields
@@ -74,7 +98,11 @@ class ApplicationController
 
         // On error, reload form with messages
         if (!empty($errors)) {
-            $students = $this->model->getAllStudents();
+            if ($isStudent) {
+                $students = [];
+            } else {
+                $students = $this->model->getAllStudents();
+            }
             $tiers = $this->model->getAllTiers();
             $old = $data;
             require __DIR__ . '/../views/applications/create.php';
@@ -92,13 +120,23 @@ class ApplicationController
      */
     public function edit(): void
     {
-        require_role(['admin', 'reviewer', 'staff']);
+        require_role(['admin', 'reviewer', 'staff', 'student']);
+        
+        $currentUser = current_user();
+        $isStudent = ($currentUser['role'] === 'student');
+        
         $id = (int)($_GET['id'] ?? 0);
         $application = $this->model->getById($id);
         
         if (!$application) {
-            header("Location: index.php?controller=applications&action=index");
-            exit;
+            set_flash('error', 'Application not found.');
+            redirect(url('applications', 'index'));
+        }
+        
+        // Students can only edit their own applications
+        if ($isStudent && (int)$application['user_id'] !== (int)$currentUser['id']) {
+            set_flash('error', 'You do not have permission to edit this application.');
+            redirect(url('applications', 'index'));
         }
         
         $students = $this->model->getAllStudents();
@@ -113,14 +151,30 @@ class ApplicationController
      */
     public function update(): void
     {
-        require_role(['admin', 'reviewer']);
+        require_role(['admin', 'reviewer', 'student']); // Students can update their own applications (limited fields)
+        
+        $currentUser = current_user();
+        $isStudent = ($currentUser['role'] === 'student');
+        
         $id = (int)($_POST['id'] ?? 0);
+        
+        // Verify ownership for students
+        $application = $this->model->getById($id);
+        if (!$application) {
+            set_flash('error', 'Application not found.');
+            redirect(url('applications', 'index'));
+        }
+        
+        if ($isStudent && (int)$application['user_id'] !== (int)$currentUser['id']) {
+            set_flash('error', 'You do not have permission to update this application.');
+            redirect(url('applications', 'index'));
+        }
         
         // Read and sanitize input
         $data = [
-            'user_id' => (int)($_POST['user_id'] ?? 0),
+            'user_id' => $isStudent ? (int)$application['user_id'] : (int)($_POST['user_id'] ?? 0), // Students cannot change user_id
             'tier_id' => (int)($_POST['tier_id'] ?? 0),
-            'status' => trim($_POST['status'] ?? 'pending'),
+            'status' => $isStudent ? $application['status'] : trim($_POST['status'] ?? 'pending'), // Students cannot change status
         ];
 
         // Validate required fields
@@ -147,7 +201,6 @@ class ApplicationController
 
         // On error, reload form with messages
         if (!empty($errors)) {
-            $application = $this->model->getById($id);
             $students = $this->model->getAllStudents();
             $tiers = $this->model->getAllTiers();
             require __DIR__ . '/../views/applications/edit.php';

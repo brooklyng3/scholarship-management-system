@@ -51,6 +51,32 @@ class ApplicationModel
     }
 
     /**
+     * Get all applications for a specific user (student)
+     * @param int $userId User ID
+     * @return array List of applications for the user
+     */
+    public function getByUserId(int $userId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                a.id,
+                a.user_id,
+                a.tier_id,
+                a.status,
+                a.applied_date,
+                u.full_name as student_name,
+                st.tier_name
+            FROM applications a
+            INNER JOIN users u ON a.user_id = u.id
+            INNER JOIN scholarship_tiers st ON a.tier_id = st.id
+            WHERE a.user_id = ?
+            ORDER BY a.id DESC
+        ");
+        $stmt->execute([$userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Create a new application
      * @param array $data Application data (user_id, tier_id, status)
      * @return bool True on success
