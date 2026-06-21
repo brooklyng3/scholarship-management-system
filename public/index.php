@@ -57,8 +57,8 @@ require_once $controllerFile;
 $controller = new $controllerClass();
 
 // Map URL action to Controller method
-$allowedActions = ['index', 'create', 'store', 'edit', 'update', 'delete', 'login', 'doLogin', 'logout', 'export'];
-// 'login'/'doLogin'/'logout' -> AuthController, 'export' -> CSV export (violation_records) [NEW]
+// Add 'show' to the array
+$allowedActions = ['index', 'show', 'create', 'store', 'edit', 'update', 'delete', 'login', 'doLogin', 'logout', 'export'];// 'login'/'doLogin'/'logout' -> AuthController, 'export' -> CSV export (violation_records) [NEW]
 
 if (in_array($action, $allowedActions) && method_exists($controller, $action)) {
     $controller->$action();

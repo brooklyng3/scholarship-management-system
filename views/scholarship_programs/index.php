@@ -72,13 +72,11 @@ $statusBadge = ['draft' => 'secondary', 'active' => 'success', 'closed' => 'dark
                             </span>
                         </td>
                         <td class="text-center">
-                            <?php if ($isAdmin): ?>
-                                <a href="<?= e(url('scholarship_programs', 'edit', ['id' => $p['id']])) ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
-                                <a href="<?= e(url('scholarship_programs', 'delete', ['id' => $p['id'], 'csrf_token' => csrf_token()])) ?>"
-                                   class="btn btn-sm btn-outline-danger"
-                                   onclick="return confirm('Xóa chương trình học bổng này?')">Xóa</a>
-                            <?php else: ?>
-                                <span class="text-muted small">—</span>
+                            <a href="<?= e(url('scholarship_programs', 'show', ['id' => $p['id']])) ?>" class="btn btn-sm btn-info">View</a>
+
+                            <?php if (isset(current_user()['role']) && in_array(current_user()['role'], ['admin', 'reviewer', 'staff'], true)): ?>
+                                <a href="<?= e(url('scholarship_programs', 'edit', ['id' => $p['id']])) ?>" class="btn btn-sm btn-warning">Edit</a>
+                                <a href="#" class="btn btn-sm btn-danger" onclick="deleteItem(<?= $p['id'] ?>)">Delete</a>
                             <?php endif; ?>
                         </td>
                     </tr>
