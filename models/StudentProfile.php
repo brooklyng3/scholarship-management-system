@@ -69,11 +69,21 @@ class StudentProfile
         return $stmt->fetch();
     }
 
+    // File: models/StudentProfile.php
+
+    // In models/StudentProfile.php
+
     public function getByUserId(int $userId): array|false
     {
-        $stmt = $this->db->prepare("SELECT * FROM student_profiles WHERE user_id = :user_id");
-        $stmt->execute(['user_id' => $userId]);
-        return $stmt->fetch();
+        // Change $this->pdo to $this->db
+        $stmt = $this->db->prepare("
+            SELECT sp.*, u.email 
+            FROM student_profiles sp 
+            INNER JOIN users u ON sp.user_id = u.id 
+            WHERE sp.user_id = ?
+        ");
+        $stmt->execute([$userId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     public function studentCodeExists(string $code, ?int $excludeId = null): bool

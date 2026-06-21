@@ -19,25 +19,27 @@ class StudentProfileController
         $currentUser = current_user();
         $isStudent = ($currentUser['role'] === 'student');
 
-        // [NEW] search + pagination
-        $q = trim($_GET['q'] ?? '');
-        $p = paginate_params(10);
-
         // Students can only view their own profile
         if ($isStudent) {
-            $profiles = $this->model->getByUserId((int)$currentUser['id']);
-            $profiles = $profiles ? [$profiles] : [];
-            $total = count($profiles);
+            $profile = $this->model->getByUserId((int)$currentUser['id']);
+            if (!$profile) {
+                set_flash('error', 'No student profile found for your account.');
+                redirect(url('dashboard', 'index'));
+            }
+            $this->render('student_profiles/index', ['profile' => $profile]);
         } else {
+            // Staff/Admin/Reviewer view all profiles with search + pagination
+            $q = trim($_GET['q'] ?? '');
+            $p = paginate_params(10);
             $profiles = $this->model->search($q, $p['perPage'], $p['offset']);
             $total = $this->model->countSearch($q);
-        }
 
-        $this->render('student_profiles/index', [
-            'profiles'   => $profiles,
-            'q'          => $q,
-            'pagination' => $isStudent ? '' : render_pagination($p['page'], $total, $p['perPage'], 'student_profiles', ['q' => $q]),
-        ]);
+            $this->render('student_profiles/index', [
+                'profiles'   => $profiles,
+                'q'          => $q,
+                'pagination' => render_pagination($p['page'], $total, $p['perPage'], 'student_profiles', ['q' => $q]),
+            ]);
+        }
     }
 
     public function create(): void
@@ -103,10 +105,11 @@ class StudentProfileController
     public function update(): void
     {
         require_role(['admin', 'reviewer', 'student']); // Students can update their own profile
-        verify_csrf();                                  // [NEW]
+        verify_csrf();
 
         $currentUser = current_user();
         $isStudent = ($currentUser['role'] === 'student');
+        $isAdmin = in_array($currentUser['role'], ['admin', 'reviewer'], true);
 
         $id = (int)($_GET['id'] ?? 0);
         $profile = $this->model->getById($id);
@@ -121,14 +124,27 @@ class StudentProfileController
             redirect(url('student_profiles', 'index'));
         }
 
-        $data = [
-            'student_code'        => trim($_POST['student_code'] ?? ''),
-            'full_name'           => trim($_POST['full_name'] ?? ''),
-            'major'               => trim($_POST['major'] ?? ''),
-            'current_gpa'         => trim($_POST['current_gpa'] ?? ''),
-            'accumulated_credits' => trim($_POST['accumulated_credits'] ?? ''),
-            'conduct_score'       => trim($_POST['conduct_score'] ?? ''),
-        ];
+        // Strict whitelist: students can only edit full_name and major
+        if ($isStudent) {
+            $data = [
+                'student_code'        => $profile['student_code'], // Preserve existing
+                'full_name'           => trim($_POST['full_name'] ?? ''),
+                'major'               => trim($_POST['major'] ?? ''),
+                'current_gpa'         => $profile['current_gpa'], // Preserve existing
+                'accumulated_credits' => $profile['accumulated_credits'], // Preserve existing
+                'conduct_score'       => $profile['conduct_score'], // Preserve existing
+            ];
+        } else {
+            // Admins can edit all fields
+            $data = [
+                'student_code'        => trim($_POST['student_code'] ?? ''),
+                'full_name'           => trim($_POST['full_name'] ?? ''),
+                'major'               => trim($_POST['major'] ?? ''),
+                'current_gpa'         => trim($_POST['current_gpa'] ?? ''),
+                'accumulated_credits' => trim($_POST['accumulated_credits'] ?? ''),
+                'conduct_score'       => trim($_POST['conduct_score'] ?? ''),
+            ];
+        }
 
         $errors = $this->validate($data, false, $id);
 
