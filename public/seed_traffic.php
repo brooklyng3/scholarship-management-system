@@ -1,195 +1,191 @@
 <?php
 /**
- * Seed Traffic Data Generator
- * Generates 100+ mock application records with realistic peak hours and financial tracking
- * 
- * Usage: Run from command line or browser: php seed_traffic.php
+ * Seed Traffic Data Generator - Unique Constraint Safe Edition
+ * Generates mock application records matching the database constraints perfectly.
  */
 
 require_once __DIR__ . '/../config/database.php';
 
+echo "<pre>";
 echo "===== Starting Traffic Data Seeding =====\n\n";
 
 try {
-    $pdo = getDbConnection();
+    $pdo = Database::getConnection();
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Step 1: Fetch all valid student user IDs
-    echo "Fetching student users...\n";
-    $stmt = $pdo->query("SELECT id FROM users WHERE role = 'student'");
-    $studentUserIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
+    // 1. Fetch profiles and tiers
+    echo "Fetching student profiles and tracking references...\n";
+    $stmt = $pdo->query("SELECT id, user_id FROM student_profiles");
+    $profiles = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    if (empty($studentUserIds)) {
-        die("Error: No student users found in the database. Please create student users first.\n");
+    if (empty($profiles)) {
+        die("Error: No student profiles found. Please register student accounts first.\n");
     }
-    echo "Found " . count($studentUserIds) . " student users.\n";
 
-    // Step 2: Fetch all valid student profile IDs
-    echo "Fetching student profiles...\n";
-    $stmt = $pdo->query("SELECT id FROM student_profiles");
-    $studentProfileIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
-    
-    if (empty($studentProfileIds)) {
-        die("Error: No student profiles found in the database.\n");
-    }
-    echo "Found " . count($studentProfileIds) . " student profiles.\n";
-
-    // Step 3: Fetch all valid scholarship tier IDs
     echo "Fetching scholarship tiers...\n";
     $stmt = $pdo->query("SELECT id FROM scholarship_tiers");
     $tierIds = $stmt->fetchAll(PDO::FETCH_COLUMN);
     
     if (empty($tierIds)) {
-        die("Error: No scholarship tiers found in the database.\n");
+        die("Error: No scholarship tiers found in the system.\n");
     }
-    echo "Found " . count($tierIds) . " scholarship tiers.\n\n";
 
-    // Prepare status distribution
-    $statuses = ['approved', 'rejected', 'reviewing', 'pending'];
+    // 2. Map out what combinations ALREADY exist in the database to avoid them
+    $stmt = $pdo->query("SELECT user_id, tier_id FROM applications");
+    $existingApps = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $existingPairs = [];
+    foreach ($existingApps as $app) {
+        $existingPairs[$app['user_id'] . '-' . $app['tier_id']] = true;
+    }
+
+    // 3. Find an evaluation account to auto-assign tasks
+    $reviewerStmt = $pdo->query("SELECT id FROM users WHERE role = 'reviewer' LIMIT 1");
+    $reviewerId = $reviewerStmt->fetchColumn();
+    $reviewerId = $reviewerId ? (int)$reviewerId : null;
+
+    // 4. Generate every single possible unique remaining combination
+    $availablePairs = [];
+    foreach ($profiles as $profile) {
+        foreach ($tierIds as $tierId) {
+            $pairKey = $profile['user_id'] . '-' . $tierId;
+            if (!isset($existingPairs[$pairKey])) {
+                $availablePairs[] = [
+                    'user_id'    => $profile['user_id'],
+                    'profile_id' => $profile['id'],
+                    'tier_id'    => $tierId
+                ];
+            }
+        }
+    }
+
+    // Shuffle the deck so the insertions are completely randomized across tiers/students
+    shuffle($availablePairs);
+
+    // Determine how many we can safely insert
+    $totalPossible = count($availablePairs);
+    echo "Found {$totalPossible} valid new unique student-tier combinations available.\n";
     
-    // Generate 150 application records for better visualization
-    $totalRecords = 150;
-    echo "Generating {$totalRecords} application records...\n";
+    // We will cap it at the maximum available pairs to avoid constraint crashes
+    $insertLimit = min($totalPossible, 90); 
+    echo "Preparing to safely insert {$insertLimit} application history blocks...\n";
 
+    $statuses = ['approved', 'rejected', 'reviewing', 'pending'];
     $insertedCount = 0;
     $approvedApplications = [];
 
-    // Prepare insert statement for applications
     $insertAppStmt = $pdo->prepare("
         INSERT INTO applications 
-        (user_id, student_profile_id, tier_id, status, applied_date, notes) 
+        (user_id, profile_id, tier_id, reviewer_id, status, applied_date) 
         VALUES (?, ?, ?, ?, ?, ?)
     ");
 
-    for ($i = 0; $i < $totalRecords; $i++) {
-        // Random selections
-        $userId = $studentUserIds[array_rand($studentUserIds)];
-        $profileId = $studentProfileIds[array_rand($studentProfileIds)];
-        $tierId = $tierIds[array_rand($tierIds)];
+    for ($i = 0; $i < $insertLimit; $i++) {
+        $pair = $availablePairs[$i];
         $status = $statuses[array_rand($statuses)];
 
-        // Generate timestamp with peak hours (40% morning, 40% evening, 20% other)
+        // Force time splits to create distinct visual data spikes on line charts
         $rand = mt_rand(1, 100);
-        
         if ($rand <= 40) {
-            // Morning peak: 09:00-11:00
-            $hour = mt_rand(9, 10);
-            $minute = mt_rand(0, 59);
+            $hour = mt_rand(9, 10); // 40% Morning peak
         } elseif ($rand <= 80) {
-            // Evening peak: 20:00-22:00
-            $hour = mt_rand(20, 21);
-            $minute = mt_rand(0, 59);
+            $hour = mt_rand(20, 21); // 40% Evening peak
         } else {
-            // Other hours
-            $hour = mt_rand(0, 23);
-            // Avoid peak hours
+            $hour = mt_rand(0, 23); // 20% Baseline spread
             while (($hour >= 9 && $hour <= 10) || ($hour >= 20 && $hour <= 21)) {
                 $hour = mt_rand(0, 23);
             }
-            $minute = mt_rand(0, 59);
         }
+        $minute = mt_rand(0, 59);
+        $second = mt_rand(0, 59);
 
-        // Random date within the last 90 days
         $daysAgo = mt_rand(0, 90);
-        $timestamp = strtotime("-{$daysAgo} days");
-        $appliedDate = date('Y-m-d', $timestamp) . ' ' . sprintf('%02d:%02d:%02d', $hour, $minute, mt_rand(0, 59));
+        $appliedDate = date('Y-m-d', strtotime("-{$daysAgo} days")) . ' ' . sprintf('%02d:%02d:%02d', $hour, $minute, $second);
 
-        $notes = "Seeded application record #" . ($i + 1);
-
-        // Insert application
         $insertAppStmt->execute([
-            $userId,
-            $profileId,
-            $tierId,
+            $pair['user_id'],
+            $pair['profile_id'],
+            $pair['tier_id'],
+            $reviewerId,
             $status,
-            $appliedDate,
-            $notes
+            $appliedDate
         ]);
 
         $applicationId = $pdo->lastInsertId();
         $insertedCount++;
 
-        // Track approved applications for financial data generation
         if ($status === 'approved') {
-            $approvedApplications[] = $applicationId;
-        }
-
-        // Progress indicator
-        if (($i + 1) % 25 == 0) {
-            echo "Progress: " . ($i + 1) . "/{$totalRecords} applications created...\n";
+            $approvedApplications[] = [
+                'id' => $applicationId,
+                'date' => $appliedDate
+            ];
         }
     }
 
-    echo "\nSuccessfully inserted {$insertedCount} application records.\n";
-    echo "Approved applications: " . count($approvedApplications) . "\n\n";
+    echo "Successfully generated {$insertedCount} history logs without a single conflict.\n";
 
-    // Step 4: Generate financial tracking data for approved applications
+    // 5. Populate matching programmatic records to unlock funding graph calculations
     if (!empty($approvedApplications)) {
-        echo "Generating financial tracking data...\n";
+        echo "Generating financial tracking indexes (decisions & disbursements)...\n";
 
-        // Prepare insert statements
+        $pdo->exec("CREATE TABLE IF NOT EXISTS scholarship_decisions (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            application_id INT NOT NULL,
+            granted_amount DECIMAL(15,2) NOT NULL,
+            final_status VARCHAR(50) DEFAULT 'approved',
+            decision_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )");
+
+        $pdo->exec("CREATE TABLE IF NOT EXISTS disbursements (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            decision_id INT NOT NULL,
+            amount_paid DECIMAL(15,2) NOT NULL,
+            status VARCHAR(50) DEFAULT 'completed',
+            payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )");
+
         $insertDecisionStmt = $pdo->prepare("
             INSERT INTO scholarship_decisions 
-            (application_id, decision_date, granted_amount, decision_notes) 
-            VALUES (?, ?, ?, ?)
+            (application_id, granted_amount, final_status, decision_date) 
+            VALUES (?, ?, 'approved', ?)
         ");
 
         $insertDisbursementStmt = $pdo->prepare("
             INSERT INTO disbursements 
-            (decision_id, amount_paid, payment_date, payment_method, status, disbursement_notes) 
-            VALUES (?, ?, ?, ?, ?, ?)
+            (decision_id, amount_paid, status, payment_date) 
+            VALUES (?, ?, 'completed', ?)
         ");
 
         $financialCount = 0;
-        $paymentMethods = ['bank_transfer', 'check', 'cash', 'online_payment'];
 
-        foreach ($approvedApplications as $appId) {
-            // Generate random granted amount (5M - 20M VND)
+        foreach ($approvedApplications as $app) {
             $grantedAmount = mt_rand(5000000, 20000000);
+            $decisionDate = date('Y-m-d H:i:s', strtotime($app['date'] . ' +' . mt_rand(3, 10) . ' days'));
             
-            // Decision date is a few days after application
-            $decisionDate = date('Y-m-d H:i:s', strtotime('+' . mt_rand(3, 14) . ' days'));
-
-            // Insert scholarship decision
             $insertDecisionStmt->execute([
-                $appId,
-                $decisionDate,
+                $app['id'],
                 $grantedAmount,
-                "Approved - Seeded financial record"
+                $decisionDate
             ]);
 
             $decisionId = $pdo->lastInsertId();
-
-            // Insert corresponding disbursement (completed)
-            $paymentDate = date('Y-m-d H:i:s', strtotime($decisionDate . ' +' . mt_rand(7, 30) . ' days'));
-            $paymentMethod = $paymentMethods[array_rand($paymentMethods)];
+            $paymentDate = date('Y-m-d H:i:s', strtotime($decisionDate . ' +' . mt_rand(5, 15) . ' days'));
 
             $insertDisbursementStmt->execute([
                 $decisionId,
-                $grantedAmount, // amount_paid matches granted_amount
-                $paymentDate,
-                $paymentMethod,
-                'completed',
-                "Payment completed - Seeded record"
+                $grantedAmount,
+                $paymentDate
             ]);
 
             $financialCount++;
         }
 
-        echo "Successfully created {$financialCount} scholarship decisions and disbursements.\n";
+        echo "Successfully integrated {$financialCount} financial records.\n";
     }
 
     echo "\n===== Seeding Completed Successfully! =====\n";
-    echo "Summary:\n";
-    echo "- Applications created: {$insertedCount}\n";
-    echo "- Approved applications: " . count($approvedApplications) . "\n";
-    echo "- Financial records created: " . (isset($financialCount) ? $financialCount : 0) . "\n";
-    echo "\nYou can now view the dashboard with populated metrics!\n";
+    echo "Head back to the dashboard page to check out the metrics charts!";
 
 } catch (PDOException $e) {
-    echo "Database Error: " . $e->getMessage() . "\n";
-    exit(1);
-} catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
-    exit(1);
+    echo "Database Execution Blocked: " . $e->getMessage() . "\n";
 }
+echo "</pre>";
