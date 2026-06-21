@@ -8,7 +8,7 @@
 
 require_once __DIR__ . '/../config/database.php';
 
-class Disbursement
+class DisbursementModel
 {
     private PDO $pdo;
 
