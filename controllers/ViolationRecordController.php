@@ -54,10 +54,10 @@ class ViolationRecordController
 
         if (empty($errors)) {
             if ($this->model->create($data)) {
-                set_flash('success', 'Thêm bản ghi vi phạm thành công.');
+                set_flash('success', 'Violation record added successfully.');
                 redirect(url('violation_records', 'index'));
             }
-            $errors[] = 'Không thể thêm bản ghi. Vui lòng thử lại.';
+            $errors[] = 'Cannot add record. Please try again.';
         }
 
         $users = $this->model->getAllUsers();
@@ -71,7 +71,7 @@ class ViolationRecordController
         $id = (int)($_GET['id'] ?? 0);
         $record = $this->model->getById($id);
         if (!$record) {
-            set_flash('error', 'Không tìm thấy bản ghi vi phạm.');
+            set_flash('error', 'Violation record not found.');
             redirect(url('violation_records', 'index'));
         }
 
@@ -87,7 +87,7 @@ class ViolationRecordController
         $id = (int)($_GET['id'] ?? 0);
         $record = $this->model->getById($id);
         if (!$record) {
-            set_flash('error', 'Không tìm thấy bản ghi vi phạm.');
+            set_flash('error', 'Violation record not found.');
             redirect(url('violation_records', 'index'));
         }
 
@@ -102,10 +102,10 @@ class ViolationRecordController
 
         if (empty($errors)) {
             if ($this->model->update($id, $data)) {
-                set_flash('success', 'Cập nhật bản ghi vi phạm thành công.');
+                set_flash('success', 'Violation record updated successfully.');
                 redirect(url('violation_records', 'index'));
             }
-            $errors[] = 'Không thể cập nhật bản ghi. Vui lòng thử lại.';
+            $errors[] = 'Cannot update record. Please try again.';
         }
 
         $record = array_merge($record, $data);
@@ -121,14 +121,14 @@ class ViolationRecordController
         $id = (int)($_GET['id'] ?? 0);
         $record = $this->model->getById($id);
         if (!$record) {
-            set_flash('error', 'Không tìm thấy bản ghi vi phạm.');
+            set_flash('error', 'Violation record not found.');
             redirect(url('violation_records', 'index'));
         }
 
         if ($this->model->delete($id)) {
-            set_flash('success', 'Đã xóa bản ghi vi phạm.');
+            set_flash('success', 'Violation record deleted.');
         } else {
-            set_flash('error', 'Không thể xóa bản ghi này.');
+            set_flash('error', 'Cannot delete this record.');
         }
 
         redirect(url('violation_records', 'index'));
@@ -149,7 +149,7 @@ class ViolationRecordController
         header('Content-Disposition: attachment; filename=violation_records_' . date('Ymd_His') . '.csv');
 
         $out = fopen('php://output', 'w');
-        fputcsv($out, ['ID', 'Họ tên', 'Email', 'Loại vi phạm', 'Mô tả', 'Ngày ghi nhận']);
+        fputcsv($out, ['ID', 'Full Name', 'Email', 'Violation Type', 'Description', 'Recorded Date']);
 
         foreach ($records as $r) {
             fputcsv($out, [
@@ -171,15 +171,15 @@ class ViolationRecordController
         $errors = [];
 
         if ($data['user_id'] <= 0) {
-            $errors[] = 'Vui lòng chọn người dùng.';
+            $errors[] = 'Please select a user.';
         }
 
         if (!array_key_exists($data['violation_type'], ViolationRecord::TYPES)) {
-            $errors[] = 'Loại vi phạm không hợp lệ.';
+            $errors[] = 'Invalid violation type.';
         }
 
         if ($data['recorded_date'] !== '' && !strtotime($data['recorded_date'])) {
-            $errors[] = 'Ngày ghi nhận không đúng định dạng.';
+            $errors[] = 'Invalid recorded date format.';
         }
 
         return $errors;

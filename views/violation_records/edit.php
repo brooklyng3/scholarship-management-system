@@ -5,19 +5,19 @@
  * @var array $users
  * @var array $types
  */
-$pageTitle = 'Sửa Vi phạm';
+$pageTitle = 'Edit Violation';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="<?= e(url('violation_records', 'index')) ?>">Vi phạm</a></li>
-        <li class="breadcrumb-item active">Sửa #<?= e($record['id']) ?></li>
+        <li class="breadcrumb-item"><a href="<?= e(url('violation_records', 'index')) ?>">Violations</a></li>
+        <li class="breadcrumb-item active">Edit #<?= e($record['id']) ?></li>
     </ol>
 </nav>
 
 <div class="card shadow-sm" style="max-width:600px;">
-    <div class="card-header"><strong>✏️ Sửa Bản ghi Vi phạm</strong></div>
+    <div class="card-header"><strong>✏️ Edit Violation Record</strong></div>
     <div class="card-body">
         <?php if (!empty($errors)): ?>
             <div class="alert alert-danger">
@@ -28,9 +28,9 @@ require_once __DIR__ . '/../partials/header.php';
         <form method="POST" action="<?= e(url('violation_records', 'update', ['id' => $record['id']])) ?>">
             <?= csrf_field() /* [NEW] */ ?>
             <div class="mb-3">
-                <label class="form-label">Người dùng <span class="text-danger">*</span></label>
+                <label class="form-label">User <span class="text-danger">*</span></label>
                 <select name="user_id" class="form-select" required>
-                    <option value="">-- Chọn người dùng --</option>
+                    <option value="">-- Select User --</option>
                     <?php foreach ($users as $u): ?>
                         <option value="<?= $u['id'] ?>" <?= $record['user_id'] == $u['id'] ? 'selected' : '' ?>>
                             [<?= e(ucfirst($u['role'])) ?>] <?= e($u['full_name']) ?> (<?= e($u['email']) ?>)
@@ -39,7 +39,7 @@ require_once __DIR__ . '/../partials/header.php';
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">Loại vi phạm <span class="text-danger">*</span></label>
+                <label class="form-label">Violation Type <span class="text-danger">*</span></label>
                 <select name="violation_type" class="form-select" required>
                     <?php foreach ($types as $val => $label): ?>
                         <option value="<?= e($val) ?>" <?= $record['violation_type'] === $val ? 'selected' : '' ?>>
@@ -49,16 +49,16 @@ require_once __DIR__ . '/../partials/header.php';
                 </select>
             </div>
             <div class="mb-3">
-                <label class="form-label">Mô tả</label>
+                <label class="form-label">Description</label>
                 <textarea name="description" class="form-control" rows="3"><?= e($record['description']) ?></textarea>
             </div>
             <div class="mb-3">
-                <label class="form-label">Ngày ghi nhận</label>
+                <label class="form-label">Recorded Date</label>
                 <input type="date" name="recorded_date" class="form-control" value="<?= e($record['recorded_date']) ?>">
             </div>
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Cập nhật</button>
-                <a href="<?= e(url('violation_records', 'index')) ?>" class="btn btn-outline-secondary">Hủy</a>
+                <button type="submit" class="btn btn-primary">Update</button>
+                <a href="<?= e(url('violation_records', 'index')) ?>" class="btn btn-outline-secondary">Cancel</a>
             </div>
         </form>
     </div>
