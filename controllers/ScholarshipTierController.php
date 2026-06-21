@@ -2,32 +2,12 @@
 // controllers/ScholarshipTierController.php
 
 require_once __DIR__ . '/../models/ScholarshipTierModel.php';
+require_once __DIR__ . '/../helpers/auth.php';
 
 class ScholarshipTierController {
     private ScholarshipTierModel $model;
 
     public function __construct() {
-        // Start session if not already started
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        // RBAC: Check if user is admin
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            echo '<!DOCTYPE html>
-<html>
-<head>
-    <title>Forbidden</title>
-</head>
-<body>
-    <h1>403 Forbidden</h1>
-    <p>You do not have permission to access this resource.</p>
-</body>
-</html>';
-            exit;
-        }
-
         $this->model = new ScholarshipTierModel();
     }
 
@@ -35,6 +15,7 @@ class ScholarshipTierController {
      * Display list of all scholarship tiers
      */
     public function index(): void {
+        require_role(['admin', 'reviewer', 'staff']);
         $tiers = $this->model->getAll();
         require __DIR__ . '/../views/scholarship_tiers/index.php';
     }
@@ -43,6 +24,7 @@ class ScholarshipTierController {
      * Show create form
      */
     public function create(): void {
+        require_role(['admin', 'reviewer']);
         $programs = $this->model->getAllPrograms();
         require __DIR__ . '/../views/scholarship_tiers/create.php';
     }
@@ -51,6 +33,7 @@ class ScholarshipTierController {
      * Handle form submission for creating new tier
      */
     public function store(): void {
+        require_role(['admin', 'reviewer']);
         // Read and sanitize input
         $data = [
             'program_id' => (int)($_POST['program_id'] ?? 0),
@@ -98,6 +81,7 @@ class ScholarshipTierController {
      * Show edit form for a specific tier
      */
     public function edit(): void {
+        require_role(['admin', 'reviewer', 'staff']);
         $id = (int)($_GET['id'] ?? 0);
         $tier = $this->model->getById($id);
         
@@ -114,6 +98,7 @@ class ScholarshipTierController {
      * Handle form submission for updating tier
      */
     public function update(): void {
+        require_role(['admin', 'reviewer']);
         $id = (int)($_POST['id'] ?? 0);
         
         // Read and sanitize input
@@ -164,6 +149,7 @@ class ScholarshipTierController {
      * Delete a scholarship tier (AJAX endpoint)
      */
     public function delete(): void {
+        require_role(['admin', 'reviewer']);
         header('Content-Type: application/json');
         
         try {

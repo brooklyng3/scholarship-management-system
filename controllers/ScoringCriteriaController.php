@@ -2,30 +2,12 @@
 // controllers/ScoringCriteriaController.php
 
 require_once __DIR__ . '/../models/ScoringCriteriaModel.php';
+require_once __DIR__ . '/../helpers/auth.php';
 
 class ScoringCriteriaController {
     private ScoringCriteriaModel $model;
 
     public function __construct() {
-        // Start session if not already started
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-        
-        // Check if user is admin
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            exit('<!DOCTYPE html>
-<html>
-<head>
-    <title>403 Forbidden</title>
-</head>
-<body>
-    <h1>403 Forbidden - Admin access required.</h1>
-</body>
-</html>');
-        }
-        
         $this->model = new ScoringCriteriaModel();
     }
 
@@ -33,6 +15,7 @@ class ScoringCriteriaController {
      * Display list of all scoring criteria
      */
     public function index(): void {
+        require_role(['admin', 'reviewer', 'staff']);
         $criteria = $this->model->getAll();
         require __DIR__ . '/../views/scoring_criteria/index.php';
     }
@@ -41,6 +24,7 @@ class ScoringCriteriaController {
      * Show create form
      */
     public function create(): void {
+        require_role(['admin', 'reviewer']);
         $programs = $this->model->getAllPrograms();
         require __DIR__ . '/../views/scoring_criteria/create.php';
     }
@@ -49,6 +33,7 @@ class ScoringCriteriaController {
      * Handle form submission for creating new criteria
      */
     public function store(): void {
+        require_role(['admin', 'reviewer']);
         // Read and sanitize input
         $data = [
             'program_id' => trim($_POST['program_id'] ?? ''),
@@ -103,6 +88,7 @@ class ScoringCriteriaController {
      * Show edit form for a specific criteria
      */
     public function edit(): void {
+        require_role(['admin', 'reviewer', 'staff']);
         $id = (int)($_GET['id'] ?? 0);
         $criteria = $this->model->getById($id);
         
@@ -119,6 +105,7 @@ class ScoringCriteriaController {
      * Handle form submission for updating criteria
      */
     public function update(): void {
+        require_role(['admin', 'reviewer']);
         $id = (int)($_POST['id'] ?? 0);
         
         // Read and sanitize input
@@ -175,6 +162,7 @@ class ScoringCriteriaController {
      * Delete a scoring criteria
      */
     public function delete(): void {
+        require_role(['admin', 'reviewer']);
         header('Content-Type: application/json');
         
         $id = (int)($_GET['id'] ?? 0);

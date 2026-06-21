@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../models/EligibilityRuleModel.php';
+require_once __DIR__ . '/../helpers/auth.php';
 
 /**
  * EligibilityRuleController
@@ -14,17 +15,6 @@ class EligibilityRuleController
 
     public function __construct()
     {
-        // RBAC: Ensure user is admin
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            echo "Access Denied: Admin privileges required.";
-            exit;
-        }
-
         $this->model = new EligibilityRuleModel();
     }
 
@@ -33,6 +23,7 @@ class EligibilityRuleController
      */
     public function index(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
         $rules = $this->model->getAll();
         require __DIR__ . '/../views/eligibility_rules/index.php';
     }
@@ -42,6 +33,7 @@ class EligibilityRuleController
      */
     public function create(): void
     {
+        require_role(['admin', 'reviewer']);
         $tiers = $this->model->getAllTiers();
         require __DIR__ . '/../views/eligibility_rules/create.php';
     }
@@ -51,6 +43,7 @@ class EligibilityRuleController
      */
     public function store(): void
     {
+        require_role(['admin', 'reviewer']);
         $errors = [];
 
         // Validate tier_id
@@ -104,6 +97,7 @@ class EligibilityRuleController
      */
     public function edit(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
         $id = (int) ($_GET['id'] ?? 0);
         
         if ($id <= 0) {
@@ -129,6 +123,7 @@ class EligibilityRuleController
      */
     public function update(): void
     {
+        require_role(['admin', 'reviewer']);
         $id = (int) ($_POST['id'] ?? 0);
         $errors = [];
 
@@ -192,6 +187,7 @@ class EligibilityRuleController
      */
     public function delete(): void
     {
+        require_role(['admin', 'reviewer']);
         header('Content-Type: application/json');
         
         $id = (int) ($_POST['id'] ?? 0);

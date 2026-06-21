@@ -7,6 +7,7 @@
  */
 
 require_once __DIR__ . '/../models/ScholarshipDecisionModel.php';
+require_once __DIR__ . '/../helpers/auth.php';
 
 class ScholarshipDecisionController
 {
@@ -14,18 +15,6 @@ class ScholarshipDecisionController
 
     public function __construct()
     {
-        // Start session and enforce RBAC
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        // Only admins can manage scholarship decisions
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            echo "Access Denied: Admin privileges required.";
-            exit;
-        }
-
         $this->model = new ScholarshipDecisionModel();
     }
 
@@ -34,6 +23,7 @@ class ScholarshipDecisionController
      */
     public function index(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
         $decisions = $this->model->getAll();
         require_once __DIR__ . '/../views/scholarship_decisions/index.php';
     }
@@ -43,6 +33,7 @@ class ScholarshipDecisionController
      */
     public function create(): void
     {
+        require_role(['admin', 'reviewer']);
         $applications = $this->model->getAllApplications();
         require_once __DIR__ . '/../views/scholarship_decisions/create.php';
     }
@@ -53,6 +44,7 @@ class ScholarshipDecisionController
      */
     public function store(): void
     {
+        require_role(['admin', 'reviewer']);
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             echo "Method Not Allowed";
@@ -106,6 +98,7 @@ class ScholarshipDecisionController
      */
     public function edit(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
         $id = (int)$_GET['id'];
         $decision = $this->model->getById($id);
 
@@ -125,6 +118,7 @@ class ScholarshipDecisionController
      */
     public function update(): void
     {
+        require_role(['admin', 'reviewer']);
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             echo "Method Not Allowed";
@@ -180,6 +174,7 @@ class ScholarshipDecisionController
      */
     public function delete(): void
     {
+        require_role(['admin', 'reviewer']);
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             http_response_code(405);
             header('Content-Type: application/json');

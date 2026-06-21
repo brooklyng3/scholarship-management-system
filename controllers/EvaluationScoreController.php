@@ -1,6 +1,7 @@
 <?php
 
 require_once __DIR__ . '/../models/EvaluationScoreModel.php';
+require_once __DIR__ . '/../helpers/auth.php';
 
 class EvaluationScoreController
 {
@@ -8,25 +9,6 @@ class EvaluationScoreController
 
     public function __construct()
     {
-        session_start();
-        
-        // RBAC: Check if user is admin or reviewer
-        if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ['admin', 'reviewer'])) {
-            http_response_code(403);
-            echo '<!DOCTYPE html>
-<html>
-<head>
-    <title>403 Forbidden</title>
-</head>
-<body>
-    <h1>403 Forbidden</h1>
-    <p>You do not have permission to access this resource.</p>
-    <p>Only administrators and reviewers can access evaluation scores.</p>
-</body>
-</html>';
-            exit;
-        }
-
         $this->model = new EvaluationScoreModel();
     }
 
@@ -35,6 +17,7 @@ class EvaluationScoreController
      */
     public function index(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
         $scores = $this->model->getAll();
         require_once __DIR__ . '/../views/evaluation_scores/index.php';
     }
@@ -44,6 +27,7 @@ class EvaluationScoreController
      */
     public function create(): void
     {
+        require_role(['admin', 'reviewer']);
         $applications = $this->model->getAllApplications();
         $criteria = $this->model->getAllCriteria();
         $reviewers = $this->model->getAllReviewers();
@@ -56,6 +40,7 @@ class EvaluationScoreController
      */
     public function store(): void
     {
+        require_role(['admin', 'reviewer']);
         // Validate score
         if (!isset($_POST['score']) || !is_numeric($_POST['score'])) {
             $_SESSION['error'] = 'Score must be a numeric value.';
@@ -95,6 +80,7 @@ class EvaluationScoreController
      */
     public function edit(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
         $id = $_GET['id'] ?? null;
         
         if (!$id) {
@@ -123,6 +109,7 @@ class EvaluationScoreController
      */
     public function update(): void
     {
+        require_role(['admin', 'reviewer']);
         $id = $_POST['id'] ?? null;
         
         if (!$id) {
@@ -170,6 +157,7 @@ class EvaluationScoreController
      */
     public function delete(): void
     {
+        require_role(['admin', 'reviewer']);
         header('Content-Type: application/json');
         
         $id = $_POST['id'] ?? null;

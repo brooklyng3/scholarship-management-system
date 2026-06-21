@@ -2,6 +2,7 @@
 // controllers/ApplicationController.php
 
 require_once __DIR__ . '/../models/ApplicationModel.php';
+require_once __DIR__ . '/../helpers/auth.php';
 
 class ApplicationController
 {
@@ -9,18 +10,6 @@ class ApplicationController
 
     public function __construct()
     {
-        // Start session and check RBAC
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
-
-        // Check if user is admin
-        if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'admin') {
-            http_response_code(403);
-            echo "Access Denied: Admin privileges required.";
-            exit;
-        }
-
         $this->model = new ApplicationModel();
     }
 
@@ -29,6 +18,7 @@ class ApplicationController
      */
     public function index(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
         $applications = $this->model->getAll();
         require __DIR__ . '/../views/applications/index.php';
     }
@@ -38,6 +28,7 @@ class ApplicationController
      */
     public function create(): void
     {
+        require_role(['admin', 'reviewer']);
         $students = $this->model->getAllStudents();
         $tiers = $this->model->getAllTiers();
         $errors = [];
@@ -51,6 +42,7 @@ class ApplicationController
      */
     public function store(): void
     {
+        require_role(['admin', 'reviewer']);
         // Read and sanitize input
         $data = [
             'user_id' => (int)($_POST['user_id'] ?? 0),
@@ -100,6 +92,7 @@ class ApplicationController
      */
     public function edit(): void
     {
+        require_role(['admin', 'reviewer', 'staff']);
         $id = (int)($_GET['id'] ?? 0);
         $application = $this->model->getById($id);
         
@@ -120,6 +113,7 @@ class ApplicationController
      */
     public function update(): void
     {
+        require_role(['admin', 'reviewer']);
         $id = (int)($_POST['id'] ?? 0);
         
         // Read and sanitize input
@@ -171,6 +165,7 @@ class ApplicationController
      */
     public function delete(): void
     {
+        require_role(['admin', 'reviewer']);
         header('Content-Type: application/json');
         
         $id = (int)($_GET['id'] ?? 0);
