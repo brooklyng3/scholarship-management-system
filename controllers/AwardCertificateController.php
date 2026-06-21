@@ -6,17 +6,17 @@
  * Enforces RBAC and implements validation, CSRF protection, and AJAX delete.
  */
 
-require_once __DIR__ . '/../models/AwardCertificate.php';
+require_once __DIR__ . '/../models/AwardCertificateController.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../helpers/auth.php';
 
 class AwardCertificateController
 {
-    private AwardCertificate $model;
+    private AwardCertificateModel $model;
 
     public function __construct()
     {
-        $this->model = new AwardCertificate();
+        $this->model = new AwardCertificateModel();
     }
 
     /**

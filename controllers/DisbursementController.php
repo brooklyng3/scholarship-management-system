@@ -6,17 +6,17 @@
  * Enforces RBAC and implements validation, CSRF protection, and AJAX delete.
  */
 
-require_once __DIR__ . '/../models/Disbursement.php';
+require_once __DIR__ . '/../models/DisbursementModel.php';
 require_once __DIR__ . '/../helpers/functions.php';
 require_once __DIR__ . '/../helpers/auth.php';
 
 class DisbursementController
 {
-    private Disbursement $model;
+    private DisbursementModel $model;
 
     public function __construct()
     {
-        $this->model = new Disbursement();
+        $this->model = new DisbursementModel();
     }
 
     /**
