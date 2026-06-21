@@ -6,6 +6,7 @@
  * @var string $status
  * @var string $q
  * @var string $pagination
+ * @var array $currentUser
  */
 $pageTitle = 'Chương trình Học bổng';
 require_once __DIR__ . '/../partials/header.php';
@@ -71,12 +72,16 @@ $statusBadge = ['draft' => 'secondary', 'active' => 'success', 'closed' => 'dark
                                 <?= e($statuses[$p['status']] ?? $p['status']) ?>
                             </span>
                         </td>
-                        <td class="text-center">
-                            <a href="<?= e(url('scholarship_programs', 'show', ['id' => $p['id']])) ?>" class="btn btn-sm btn-info">View</a>
-
-                            <?php if (isset(current_user()['role']) && in_array(current_user()['role'], ['admin', 'reviewer', 'staff'], true)): ?>
-                                <a href="<?= e(url('scholarship_programs', 'edit', ['id' => $p['id']])) ?>" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="#" class="btn btn-sm btn-danger" onclick="deleteItem(<?= $p['id'] ?>)">Delete</a>
+                        <td>
+                            <a href="index.php?controller=scholarship_programs&action=show&id=<?= htmlspecialchars($p['id']) ?>" 
+                            class="btn btn-sm btn-info">View</a>
+                            
+                            <?php if (isset($currentUser) && in_array($currentUser['role'], ['admin', 'staff'], true)): ?>
+                                <a href="index.php?controller=scholarship_programs&action=edit&id=<?= htmlspecialchars($p['id']) ?>" 
+                                class="btn btn-sm btn-warning">Edit</a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-danger delete-program-btn" 
+                                        data-id="<?= htmlspecialchars($p['id']) ?>">Delete</button>
                             <?php endif; ?>
                         </td>
                     </tr>

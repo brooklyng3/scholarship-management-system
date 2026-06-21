@@ -21,7 +21,6 @@ class ScholarshipProgramController
     {
         require_role(['admin', 'reviewer', 'staff', 'student']); // Students can view programs
 
-        // [NEW] search by title + filter by status + pagination
         $q = trim($_GET['q'] ?? '');
         $status = $_GET['status'] ?? '';
         $status = array_key_exists($status, ScholarshipProgram::STATUSES) ? $status : '';
@@ -31,6 +30,7 @@ class ScholarshipProgramController
         $total = $this->model->countSearch($q, $status);
 
         $this->render('scholarship_programs/index', [
+            'currentUser'=> current_user(), // 💡 FIX: Pass the current user session data here
             'programs'   => $programs,
             'types'      => ScholarshipProgram::TYPES,
             'statuses'   => ScholarshipProgram::STATUSES,
