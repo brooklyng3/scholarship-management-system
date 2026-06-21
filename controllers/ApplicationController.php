@@ -38,14 +38,19 @@ class ApplicationController
      */
     public function create(): void
     {
-        require_role(['admin', 'reviewer', 'student']); // Students can create their own applications
+        require_role(['admin', 'reviewer', 'student']); 
         
         $currentUser = current_user();
         $isStudent = ($currentUser['role'] === 'student');
         
-        // For students, pre-populate with their own user_id
+        // FIX: Populate $students even for students, so the dropdown renders
         if ($isStudent) {
-            $students = []; // Students don't need to see other students
+            // Create a single-item array matching the structure of getAllStudents()
+            $students = [[
+                'id' => $currentUser['id'],
+                'full_name' => $currentUser['full_name'], // Ensure this key matches your user session data
+                'email' => $currentUser['email']
+            ]];
         } else {
             $students = $this->model->getAllStudents();
         }

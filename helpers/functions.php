@@ -14,12 +14,29 @@ function set_flash(string $type, string $message): void
 }
 
 /** Lấy và xóa flash message (chỉ hiển thị 1 lần) */
-function get_flash(): ?array
-{
-    if (!empty($_SESSION['flash'])) {
-        $flash = $_SESSION['flash'];
-        unset($_SESSION['flash']);
-        return $flash;
+// In helpers/functions.php
+
+function get_flash(?string $type = null) {
+    // If no type is provided, check for 'error' first, then 'success'
+    if ($type === null) {
+        if (isset($_SESSION['flash']['error'])) {
+            $msg = $_SESSION['flash']['error'];
+            unset($_SESSION['flash']['error']);
+            return ['type' => 'error', 'message' => $msg];
+        }
+        if (isset($_SESSION['flash']['success'])) {
+            $msg = $_SESSION['flash']['success'];
+            unset($_SESSION['flash']['success']);
+            return ['type' => 'success', 'message' => $msg];
+        }
+        return null;
+    }
+
+    // If a type IS provided, handle it normally
+    if (isset($_SESSION['flash'][$type])) {
+        $msg = $_SESSION['flash'][$type];
+        unset($_SESSION['flash'][$type]);
+        return ['type' => $type, 'message' => $msg];
     }
     return null;
 }
