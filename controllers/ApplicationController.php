@@ -2,15 +2,18 @@
 // controllers/ApplicationController.php
 
 require_once __DIR__ . '/../models/ApplicationModel.php';
+require_once __DIR__ . '/../models/ApplicationDocumentModel.php';
 require_once __DIR__ . '/../helpers/auth.php';
 
 class ApplicationController
 {
     private ApplicationModel $model;
+    private ApplicationDocumentModel $documentModel;
 
     public function __construct()
     {
         $this->model = new ApplicationModel();
+        $this->documentModel = new ApplicationDocumentModel();
     }
 
     /**
@@ -101,10 +104,41 @@ class ApplicationController
             $errors[] = "This student has already applied to this scholarship tier.";
         }
 
+        // Validate file upload
+        if (!isset($_FILES['proof_document']) || $_FILES['proof_document']['error'] === UPLOAD_ERR_NO_FILE) {
+            $errors[] = "Supporting document is required.";
+        } elseif ($_FILES['proof_document']['error'] !== UPLOAD_ERR_OK) {
+            $errors[] = "File upload failed. Please try again.";
+        } else {
+            $file = $_FILES['proof_document'];
+            $maxSize = 5 * 1024 * 1024; // 5MB
+            $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+            $allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+            
+            $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $fileMimeType = mime_content_type($file['tmp_name']);
+            
+            if ($file['size'] > $maxSize) {
+                $errors[] = "File size must be less than 5MB.";
+            }
+            
+            if (!in_array($fileExtension, $allowedExtensions, true)) {
+                $errors[] = "Only PDF, JPG, and PNG files are allowed.";
+            }
+            
+            if (!in_array($fileMimeType, $allowedMimeTypes, true)) {
+                $errors[] = "Invalid file type. Only PDF, JPG, and PNG files are allowed.";
+            }
+        }
+
         // On error, reload form with messages
         if (!empty($errors)) {
             if ($isStudent) {
-                $students = [];
+                $students = [[
+                    'id' => $currentUser['id'],
+                    'full_name' => $currentUser['full_name'],
+                    'email' => $currentUser['email']
+                ]];
             } else {
                 $students = $this->model->getAllStudents();
             }
@@ -114,8 +148,56 @@ class ApplicationController
             return;
         }
 
-        // Save and redirect
-        $this->model->create($data);
+        // Save application
+        $applicationId = $this->model->create($data);
+        
+        if (!$applicationId) {
+            set_flash('error', 'Failed to create application.');
+            header("Location: index.php?controller=applications&action=create");
+            exit;
+        }
+
+        // Handle file upload
+        $file = $_FILES['proof_document'];
+        $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $uniqueFileName = 'app_' . $applicationId . '_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . $fileExtension;
+        $uploadDir = __DIR__ . '/../public/uploads/docs/';
+        $uploadPath = $uploadDir . $uniqueFileName;
+        
+        // Ensure upload directory exists
+        if (!is_dir($uploadDir)) {
+            mkdir($uploadDir, 0755, true);
+        }
+        
+        // Move uploaded file
+        if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
+            set_flash('error', 'Application created but file upload failed.');
+            header("Location: index.php?controller=applications&action=index");
+            exit;
+        }
+        
+        // Save document metadata
+        $documentData = [
+            'application_id' => $applicationId,
+            'document_type' => 'proof',
+            'file_url' => 'uploads/docs/' . $uniqueFileName
+        ];
+        
+        if (!$this->documentModel->create($documentData)) {
+            // 1. Clean up uploaded file
+            if (file_exists($uploadPath)) {
+                unlink($uploadPath);
+            }
+            
+            // 2. Roll back the application record so we don't leave an orphan row
+            $this->model->delete($applicationId); 
+            
+            set_flash('error', 'Application creation failed because the document metadata could not be saved.');
+            header("Location: index.php?controller=applications&action=index");
+            exit;
+        }
+        
+        set_flash('success', 'Application created successfully with supporting document.');
         header("Location: index.php?controller=applications&action=index");
         exit;
     }
@@ -221,6 +303,8 @@ class ApplicationController
     /**
      * Delete an application (AJAX)
      */
+    // controllers/ApplicationController.php
+
     public function delete(): void
     {
         require_role(['admin', 'reviewer']);
@@ -233,6 +317,18 @@ class ApplicationController
             exit;
         }
         
+        // 1. Fetch and physically remove all attached documents from disk
+        $documents = $this->documentModel->getByApplicationId($id);
+        foreach ($documents as $doc) {
+            $absolutePath = __DIR__ . '/../public/' . $doc['file_url'];
+            if (file_exists($absolutePath)) {
+                unlink($absolutePath); // Delete the file from public/uploads/docs/
+            }
+            // Remove document record from the database
+            $this->documentModel->delete((int)$doc['id']);
+        }
+        
+        // 2. Now it is safe to delete the parent application record
         $success = $this->model->delete($id);
         
         echo json_encode(['success' => $success]);

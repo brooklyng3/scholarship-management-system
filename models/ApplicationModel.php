@@ -79,9 +79,9 @@ class ApplicationModel
     /**
      * Create a new application
      * @param array $data Application data (user_id, tier_id, status)
-     * @return bool True on success
+     * @return int|false Last insert ID on success or false on failure
      */
-    public function create(array $data): bool
+    public function create(array $data): int|false
     {
         // Get profile_id for the student
         $profileId = $this->getProfileIdByUserId($data['user_id']);
@@ -95,12 +95,17 @@ class ApplicationModel
             (user_id, tier_id, profile_id, status) 
             VALUES (?, ?, ?, ?)
         ");
-        return $stmt->execute([
+        
+        if ($stmt->execute([
             $data['user_id'],
             $data['tier_id'],
             $profileId,
             $data['status']
-        ]);
+        ])) {
+            return (int)$this->pdo->lastInsertId();
+        }
+        
+        return false;
     }
 
     /**

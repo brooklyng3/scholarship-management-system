@@ -1,8 +1,8 @@
 <?php
 /**
- * @var array $applications List of all applications
+ * @var array $applications
+ * @var array $currentUser
  */
-
 $pageTitle = 'Scholarship Applications';
 require_once __DIR__ . '/../partials/header.php';
 ?>
@@ -63,14 +63,17 @@ require_once __DIR__ . '/../partials/header.php';
                 </td>
                 <td><?= htmlspecialchars($app['applied_date']) ?></td>
                 <td style="text-align: center;">
-                    <div class="actions">
-                        <a href="index.php?controller=applications&action=edit&id=<?= $app['id'] ?>" 
-                           class="btn btn-secondary" 
-                           style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Edit</a>
-                        <button type="button" 
-                                class="btn btn-danger delete-btn" 
-                                data-id="<?= $app['id'] ?>"
-                                style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Delete</button>
+                    <div class="actions d-flex gap-2 justify-content-center">
+                        <a href="index.php?controller=applications&action=edit&id=<?= htmlspecialchars($app['id']) ?>" 
+                        class="btn btn-secondary" 
+                        style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Edit</a>
+                        
+                        <?php if (in_array($currentUser['role'], ['admin', 'reviewer'], true)): ?>
+                            <button type="button" 
+                                    class="btn btn-sm btn-danger delete-application-btn" 
+                                    style="font-size: 0.85rem; padding: 0.4rem 0.8rem;"
+                                    data-id="<?= htmlspecialchars($app['id']) ?>">Delete</button>
+                        <?php endif; ?>
                     </div>
                 </td>
             </tr>

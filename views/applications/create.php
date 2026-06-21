@@ -35,7 +35,7 @@ $isStudent = ($currentUser['role'] === 'student');
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="index.php?controller=applications&action=store" id="applicationForm">
+        <form method="POST" action="index.php?controller=applications&action=store" id="applicationForm" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="user_id" class="form-label">Student <span class="text-danger">*</span></label>
                 <select name="user_id" id="user_id" class="form-select" required>
@@ -60,6 +60,12 @@ $isStudent = ($currentUser['role'] === 'student');
                         </option>
                     <?php endforeach; ?>
                 </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="proof_document" class="form-label">Supporting Document <span class="text-danger">*</span></label>
+                <input type="file" name="proof_document" id="proof_document" class="form-control" accept=".pdf,.jpg,.png" required>
+                <div class="form-text">Upload supporting document (PDF, JPG, PNG, max 5MB)</div>
             </div>
 
             <?php if ($isStudent): ?>
@@ -89,6 +95,7 @@ document.getElementById('applicationForm').addEventListener('submit', function(e
     const userId = document.getElementById('user_id').value;
     const tierId = document.getElementById('tier_id').value;
     const statusField = document.getElementById('status');
+    const fileInput = document.getElementById('proof_document');
     
     if (!userId || !tierId) {
         e.preventDefault();
@@ -101,6 +108,30 @@ document.getElementById('applicationForm').addEventListener('submit', function(e
         alert('Please select a status.');
         return false;
     }
+    
+    if (!fileInput.files.length) {
+        e.preventDefault();
+        alert('Please upload a supporting document.');
+        return false;
+    }
+    
+    const file = fileInput.files[0];
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    
+    if (file.size > maxSize) {
+        e.preventDefault();
+        alert('File size must be less than 5MB.');
+        return false;
+    }
+    
+    if (!allowedExtensions.includes(fileExtension)) {
+        e.preventDefault();
+        alert('Only PDF, JPG, and PNG files are allowed.');
+        return false;
+    }
+    
     return true;
 });
 </script>
