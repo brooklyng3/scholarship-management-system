@@ -17,19 +17,22 @@ class ApplicationController
     }
 
     /**
-     * Display list of all applications
+     * Display list of all applications with role isolation rules
      */
     public function index(): void
     {
         require_role(['admin', 'reviewer', 'staff', 'student']);
         
         $currentUser = current_user();
-        $isStudent = ($currentUser['role'] === 'student');
         
-        // Students can only view their own applications
-        if ($isStudent) {
+        if ($currentUser['role'] === 'student') {
+            // Students only see what they submitted themselves
             $applications = $this->model->getByUserId((int)$currentUser['id']);
+        } elseif ($currentUser['role'] === 'reviewer') {
+            // RE-01 FIX: Reviewers are restricted to their assigned tasks only
+            $applications = $this->model->getByReviewerId((int)$currentUser['id']);
         } else {
+            // Admins and corporate staff see the full system lifecycle list
             $applications = $this->model->getAll();
         }
         
@@ -339,5 +342,104 @@ class ApplicationController
         
         echo json_encode(['success' => $success]);
         exit;
+    }
+
+    /**
+     * Display review form for an application
+     */
+    public function review(): void
+    {
+        require_role(['reviewer', 'admin']);
+        
+        $id = (int)($_GET['id'] ?? 0);
+        $application = $this->model->getApplicationWithDetails($id);
+        
+        if (!$application) {
+            set_flash('error', 'Application not found.');
+            redirect(url('applications', 'index'));
+        }
+        
+        // Get uploaded documents
+        $documents = $this->documentModel->getByApplicationId($id);
+        
+        // Get existing review if any
+        $existingReview = $this->model->getReviewByApplicationId($id);
+        
+        $currentUser = current_user();
+        $errors = [];
+        
+        require __DIR__ . '/../views/applications/review.php';
+    }
+
+    /**
+     * Handle review submission
+     */
+    public function submitReview(): void
+    {
+        require_role(['reviewer', 'admin']);
+        
+        $currentUser = current_user();
+        $applicationId = (int)($_POST['application_id'] ?? 0);
+        $score = trim($_POST['score'] ?? '');
+        $comment = trim($_POST['comment'] ?? '');
+        $status = trim($_POST['status'] ?? 'pending');
+        
+        // Validate
+        $errors = [];
+        
+        if ($applicationId === 0) {
+            $errors[] = "Invalid application ID.";
+        }
+        
+        if (!is_numeric($score) || $score < 0 || $score > 100) {
+            $errors[] = "Score must be a number between 0 and 100.";
+        }
+        
+        if (empty($comment)) {
+            $errors[] = "Comment is required.";
+        }
+        
+        $validStatuses = ['pending', 'reviewing', 'approved', 'rejected'];
+        if (!in_array($status, $validStatuses, true)) {
+            $errors[] = "Invalid status selected.";
+        }
+        
+        // If errors, reload form
+        if (!empty($errors)) {
+            $application = $this->model->getApplicationWithDetails($applicationId);
+            $documents = $this->documentModel->getByApplicationId($applicationId);
+            $existingReview = $this->model->getReviewByApplicationId($applicationId);
+            require __DIR__ . '/../views/applications/review.php';
+            return;
+        }
+        
+        // Sanitize inputs
+        $score = (float)$score;
+        $comment = htmlspecialchars($comment, ENT_QUOTES, 'UTF-8');
+        
+        // Save review
+        $reviewData = [
+            'application_id' => $applicationId,
+            'reviewer_id' => (int)$currentUser['id'],
+            'score' => $score,
+            'comment' => $comment
+        ];
+        
+        $reviewSaved = $this->model->saveReview($reviewData);
+        
+        // Update application status
+        $statusData = ['status' => $status];
+        $statusUpdated = $this->model->update($applicationId, array_merge(
+            $this->model->getById($applicationId),
+            $statusData
+        ));
+        
+        if ($reviewSaved && $statusUpdated) {
+            set_flash('success', 'Review submitted successfully.');
+        } else {
+            set_flash('error', 'Failed to submit review.');
+        }
+        
+        redirect(url('applications', 'index'));
     }
 }

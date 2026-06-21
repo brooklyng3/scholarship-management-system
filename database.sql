@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 04, 2026 at 11:31 PM
+-- Generation Time: Jun 22, 2026 at 12:32 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -32,6 +32,7 @@ CREATE TABLE `applications` (
   `user_id` int(11) NOT NULL,
   `tier_id` int(11) NOT NULL,
   `profile_id` int(11) NOT NULL,
+  `reviewer_id` int(11) DEFAULT NULL,
   `status` enum('pending','reviewing','approved','rejected') DEFAULT 'pending',
   `applied_date` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -40,22 +41,24 @@ CREATE TABLE `applications` (
 -- Dumping data for table `applications`
 --
 
-INSERT INTO `applications` (`id`, `user_id`, `tier_id`, `profile_id`, `status`, `applied_date`) VALUES
-(1, 6, 1, 1, 'evaluated', '2026-06-04 21:07:08'),
-(2, 8, 1, 3, 'evaluated', '2026-06-04 21:07:08'),
-(3, 13, 1, 8, 'evaluated', '2026-06-04 21:07:08'),
-(4, 17, 1, 12, 'evaluated', '2026-06-04 21:07:08'),
-(5, 12, 2, 7, 'evaluated', '2026-06-04 21:07:08'),
-(6, 15, 2, 10, 'evaluated', '2026-06-04 21:07:08'),
-(7, 19, 2, 14, 'reviewing', '2026-06-04 21:07:08'),
-(8, 20, 2, 15, 'reviewing', '2026-06-04 21:07:08'),
-(9, 7, 3, 2, 'pending', '2026-06-04 21:07:08'),
-(10, 10, 3, 5, 'evaluated', '2026-06-04 21:07:08'),
-(11, 14, 3, 9, 'evaluated', '2026-06-04 21:07:08'),
-(12, 18, 3, 13, 'reviewing', '2026-06-04 21:07:08'),
-(13, 11, 4, 6, 'pending', '2026-06-04 21:07:08'),
-(14, 8, 4, 3, 'evaluated', '2026-06-04 21:07:08'),
-(15, 6, 5, 1, 'evaluated', '2026-06-04 21:07:08');
+INSERT INTO `applications` (`id`, `user_id`, `tier_id`, `profile_id`, `reviewer_id`, `status`, `applied_date`) VALUES
+(1, 6, 1, 1, 3, '', '2026-06-04 21:07:08'),
+(2, 8, 1, 3, 3, '', '2026-06-04 21:07:08'),
+(3, 13, 1, 8, 3, '', '2026-06-04 21:07:08'),
+(4, 17, 1, 12, 3, '', '2026-06-04 21:07:08'),
+(5, 12, 2, 7, 3, '', '2026-06-04 21:07:08'),
+(6, 15, 2, 10, 3, '', '2026-06-04 21:07:08'),
+(7, 19, 2, 14, 3, 'reviewing', '2026-06-04 21:07:08'),
+(8, 20, 2, 15, 3, 'reviewing', '2026-06-04 21:07:08'),
+(9, 7, 3, 2, 3, 'pending', '2026-06-04 21:07:08'),
+(10, 10, 3, 5, 3, '', '2026-06-04 21:07:08'),
+(11, 14, 3, 9, 3, '', '2026-06-04 21:07:08'),
+(12, 18, 3, 13, 3, 'reviewing', '2026-06-04 21:07:08'),
+(13, 11, 4, 6, 3, 'pending', '2026-06-04 21:07:08'),
+(14, 8, 4, 3, 3, '', '2026-06-04 21:07:08'),
+(15, 6, 5, 1, 3, '', '2026-06-04 21:07:08'),
+(16, 8, 6, 3, 3, 'pending', '2026-06-21 20:31:39'),
+(17, 8, 7, 3, 3, 'pending', '2026-06-21 20:53:44');
 
 -- --------------------------------------------------------
 
@@ -87,7 +90,8 @@ INSERT INTO `application_documents` (`id`, `application_id`, `document_type`, `f
 (9, 6, 'transcript', '/uploads/docs/transcript_sv010.pdf', '2026-06-04 21:07:09'),
 (10, 13, 'ctf_certificate', '/uploads/docs/ctf_sv006.pdf', '2026-06-04 21:07:09'),
 (11, 14, 'ctf_certificate', '/uploads/docs/ctf_sv003.pdf', '2026-06-04 21:07:09'),
-(12, 15, 'security_plus', '/uploads/docs/sec_sv001.pdf', '2026-06-04 21:07:09');
+(12, 15, 'security_plus', '/uploads/docs/sec_sv001.pdf', '2026-06-04 21:07:09'),
+(15, 17, 'proof', 'uploads/docs/app_17_1782075224_5b7b8b15c8347b12.jpg', '2026-06-21 20:53:44');
 
 -- --------------------------------------------------------
 
@@ -345,6 +349,8 @@ INSERT INTO `staff_profiles` (`id`, `user_id`, `staff_code`, `department`, `upda
 CREATE TABLE `student_profiles` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `gpa` decimal(3,2) DEFAULT NULL,
+  `year_level` varchar(50) DEFAULT NULL,
   `student_code` varchar(20) NOT NULL,
   `full_name` varchar(100) NOT NULL,
   `major` varchar(100) DEFAULT NULL,
@@ -358,22 +364,22 @@ CREATE TABLE `student_profiles` (
 -- Dumping data for table `student_profiles`
 --
 
-INSERT INTO `student_profiles` (`id`, `user_id`, `student_code`, `full_name`, `major`, `current_gpa`, `accumulated_credits`, `conduct_score`, `updated_at`) VALUES
-(1, 6, 'SV2026001', 'Nguyễn Văn Một', 'Information Technology', 3.85, 95, 90, '2026-06-04 21:07:08'),
-(2, 7, 'SV2026002', 'Trần Thị Hai', 'Computer Science', 3.20, 80, 85, '2026-06-04 21:07:08'),
-(3, 8, 'SV2026003', 'Lê Văn Ba', 'Information Systems', 3.90, 110, 95, '2026-06-04 21:07:08'),
-(4, 9, 'SV2026004', 'Phạm Thị Bốn', 'Software Engineering', 2.80, 70, 75, '2026-06-04 21:07:08'),
-(5, 10, 'SV2026005', 'Hoàng Văn Năm', 'Data Science', 3.55, 85, 88, '2026-06-04 21:07:08'),
-(6, 11, 'SV2026006', 'Vũ Thị Sáu', 'Cyber Security', 3.10, 75, 80, '2026-06-04 21:07:08'),
-(7, 12, 'SV2026007', 'Đặng Văn Bảy', 'Information Technology', 3.75, 100, 92, '2026-06-04 21:07:08'),
-(8, 13, 'SV2026008', 'Bùi Thị Tám', 'Computer Science', 3.95, 115, 98, '2026-06-04 21:07:08'),
-(9, 14, 'SV2026009', 'Đỗ Văn Chín', 'Software Engineering', 3.40, 90, 85, '2026-06-04 21:07:08'),
-(10, 15, 'SV2026010', 'Hồ Thị Mười', 'Data Science', 3.65, 95, 90, '2026-06-04 21:07:08'),
-(11, 16, 'SV2026011', 'Ngô Văn Mười Một', 'Information Systems', 2.50, 60, 70, '2026-06-04 21:07:08'),
-(12, 17, 'SV2026012', 'Dương Thị Mười Hai', 'Cyber Security', 3.88, 105, 94, '2026-06-04 21:07:08'),
-(13, 18, 'SV2026013', 'Lý Văn Mười Ba', 'Information Technology', 3.35, 85, 82, '2026-06-04 21:07:08'),
-(14, 19, 'SV2026014', 'Mai Thị Mười Bốn', 'Computer Science', 3.70, 98, 91, '2026-06-04 21:07:08'),
-(15, 20, 'SV2026015', 'Trịnh Văn Mười Lăm', 'Software Engineering', 3.60, 92, 88, '2026-06-04 21:07:08');
+INSERT INTO `student_profiles` (`id`, `user_id`, `gpa`, `year_level`, `student_code`, `full_name`, `major`, `current_gpa`, `accumulated_credits`, `conduct_score`, `updated_at`) VALUES
+(1, 6, NULL, NULL, 'SV2026001', 'Nguyễn Văn Một', 'Information Technology', 3.85, 95, 90, '2026-06-04 21:07:08'),
+(2, 7, NULL, NULL, 'SV2026002', 'Trần Thị Hai', 'Computer Science', 3.20, 80, 85, '2026-06-04 21:07:08'),
+(3, 8, NULL, NULL, 'SV2026003', 'Lê Văn Ba', 'Information Systems', 3.90, 110, 95, '2026-06-04 21:07:08'),
+(4, 9, NULL, NULL, 'SV2026004', 'Phạm Thị Bốn', 'Software Engineering', 2.80, 70, 75, '2026-06-04 21:07:08'),
+(5, 10, NULL, NULL, 'SV2026005', 'Hoàng Văn Năm', 'Data Science', 3.55, 85, 88, '2026-06-04 21:07:08'),
+(6, 11, NULL, NULL, 'SV2026006', 'Vũ Thị Sáu', 'Cyber Security', 3.10, 75, 80, '2026-06-04 21:07:08'),
+(7, 12, NULL, NULL, 'SV2026007', 'Đặng Văn Bảy', 'Information Technology', 3.75, 100, 92, '2026-06-04 21:07:08'),
+(8, 13, NULL, NULL, 'SV2026008', 'Bùi Thị Tám', 'Computer Science', 3.95, 115, 98, '2026-06-04 21:07:08'),
+(9, 14, NULL, NULL, 'SV2026009', 'Đỗ Văn Chín', 'Software Engineering', 3.40, 90, 85, '2026-06-04 21:07:08'),
+(10, 15, NULL, NULL, 'SV2026010', 'Hồ Thị Mười', 'Data Science', 3.65, 95, 90, '2026-06-04 21:07:08'),
+(11, 16, NULL, NULL, 'SV2026011', 'Ngô Văn Mười Một', 'Information Systems', 2.50, 60, 70, '2026-06-04 21:07:08'),
+(12, 17, NULL, NULL, 'SV2026012', 'Dương Thị Mười Hai', 'Cyber Security', 3.88, 105, 94, '2026-06-04 21:07:08'),
+(13, 18, NULL, NULL, 'SV2026013', 'Lý Văn Mười Ba', 'Information Technology', 3.35, 85, 82, '2026-06-04 21:07:08'),
+(14, 19, NULL, NULL, 'SV2026014', 'Mai Thị Mười Bốn', 'Computer Science', 3.70, 98, 91, '2026-06-04 21:07:08'),
+(15, 20, NULL, NULL, 'SV2026015', 'Trịnh Văn Mười Lăm', 'Software Engineering', 3.60, 92, 88, '2026-06-04 21:07:08');
 
 -- --------------------------------------------------------
 
@@ -451,7 +457,8 @@ ALTER TABLE `applications`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `unique_user_tier` (`user_id`,`tier_id`),
   ADD KEY `tier_id` (`tier_id`),
-  ADD KEY `profile_id` (`profile_id`);
+  ADD KEY `profile_id` (`profile_id`),
+  ADD KEY `fk_applications_reviewer` (`reviewer_id`);
 
 --
 -- Indexes for table `application_documents`
@@ -555,13 +562,13 @@ ALTER TABLE `violation_records`
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `application_documents`
 --
 ALTER TABLE `application_documents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `award_certificates`
@@ -645,7 +652,8 @@ ALTER TABLE `violation_records`
 ALTER TABLE `applications`
   ADD CONSTRAINT `applications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `applications_ibfk_2` FOREIGN KEY (`tier_id`) REFERENCES `scholarship_tiers` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `applications_ibfk_3` FOREIGN KEY (`profile_id`) REFERENCES `student_profiles` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `applications_ibfk_3` FOREIGN KEY (`profile_id`) REFERENCES `student_profiles` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_applications_reviewer` FOREIGN KEY (`reviewer_id`) REFERENCES `users` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `application_documents`

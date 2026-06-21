@@ -15,79 +15,81 @@ require_once __DIR__ . '/../partials/header.php';
     <?php endif; ?>
 </div>
 
-<div class="card">
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Student Name</th>
-                <th>Scholarship Program</th> <th>Tier Name</th>
-                <th>Status</th>
-                <th>Applied Date</th>
-                <th class="text-center">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-        <?php if (empty($applications)): ?>
-            <tr>
-                <td colspan="6" style="text-align: center; color: #999; padding: 2rem;">
-                    No applications found.
-                </td>
-            </tr>
-        <?php else: ?>
-            <?php foreach ($applications as $app): ?>
-            <tr id="row-<?= htmlspecialchars($app['id']) ?>">
-                <td><?= htmlspecialchars($app['id']) ?></td>
-                <td><strong><?= htmlspecialchars($app['student_name']) ?></strong></td>
-                <td><?= htmlspecialchars($app['program_title']) ?></td> <td><?= htmlspecialchars($app['tier_name']) ?></td>
-                <td>
-                    <?php
-                    $statusClass = 'status-draft';
-                    switch ($app['status']) {
-                        case 'pending':
-                            $statusClass = 'status-draft';
-                            break;
-                        case 'reviewing':
-                            $statusClass = 'status-draft';
-                            break;
-                        case 'approved':
-                            $statusClass = 'status-active';
-                            break;
-                        case 'rejected':
-                            $statusClass = 'status-closed';
-                            break;
-                    }
-                    ?>
-                    <span class="status-badge <?= $statusClass ?>">
-                        <?= htmlspecialchars(ucfirst($app['status'])) ?>
-                    </span>
-                </td>
-                <td><?= htmlspecialchars($app['applied_date']) ?></td>
-                <td style="text-align: center;">
-                    <div class="actions d-flex gap-2 justify-content-center">
-                        <a href="index.php?controller=applications&action=edit&id=<?= htmlspecialchars($app['id']) ?>" 
-                        class="btn btn-secondary" 
-                        style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Edit</a>
-                        
-                        <?php if (in_array($currentUser['role'], ['admin', 'reviewer'], true)): ?>
-                            <button type="button" 
-                                    class="btn btn-sm btn-danger delete-application-btn" 
-                                    style="font-size: 0.85rem; padding: 0.4rem 0.8rem;"
-                                    data-id="<?= htmlspecialchars($app['id']) ?>">Delete</button>
-                        <?php endif; ?>
-                    </div>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-        <?php endif; ?>
-        </tbody>
-    </table>
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 5%; text-align: center;">ID</th>
+                    <th style="width: 20%;">Student Name</th>
+                    <th style="width: 25%;">Scholarship Program</th> 
+                    <th style="width: 15%;">Tier Name</th>
+                    <th style="width: 10%;">Status</th>
+                    <th style="width: 15%;">Applied Date</th>
+                    <th style="width: 10%; text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php if (empty($applications)): ?>
+                <tr>
+                    <td colspan="7" style="text-align: center; color: #999; padding: 2rem;">
+                        No applications found.
+                    </td>
+                </tr>
+            <?php else: ?>
+                <?php foreach ($applications as $app): ?>
+                <tr id="row-<?= htmlspecialchars($app['id']) ?>">
+                    <td style="text-align: center; font-weight: 500;"><?= htmlspecialchars($app['id']) ?></td>
+                    
+                    <td><strong><?= htmlspecialchars($app['student_name']) ?></strong></td>
+                    
+                    <td><?= htmlspecialchars($app['program_title']) ?></td>
+                    
+                    <td><span class="text-muted"><?= htmlspecialchars($app['tier_name']) ?></span></td>
+                    
+                    <td>
+                        <?php
+                        $statusClass = 'badge bg-warning text-dark';
+                        if ($app['status'] === 'approved') $statusClass = 'badge bg-success';
+                        if ($app['status'] === 'rejected') $statusClass = 'badge bg-danger';
+                        if ($app['status'] === 'reviewing') $statusClass = 'badge bg-info';
+                        ?>
+                        <span class="<?= $statusClass ?>"><?= htmlspecialchars(ucfirst($app['status'])) ?></span>
+                    </td>
+                    
+                    <td class="small text-secondary"><?= htmlspecialchars($app['applied_date']) ?></td>
+                    
+                    <td style="text-align: center;">
+                        <div class="actions d-flex gap-2 justify-content-center">
+                            <?php if (in_array($currentUser['role'], ['admin', 'reviewer'], true)): ?>
+                                <a href="index.php?controller=applications&action=review&id=<?= htmlspecialchars($app['id']) ?>" 
+                                class="btn btn-sm btn-info text-white">Review</a>
+                            <?php endif; ?>
+                            
+                            <?php if (in_array($currentUser['role'], ['admin', 'staff', 'student'], true)): ?>
+                                <a href="index.php?controller=applications&action=edit&id=<?= htmlspecialchars($app['id']) ?>" 
+                                class="btn btn-sm btn-secondary">Edit</a>
+                            <?php endif; ?>
+                            
+                            <?php if (in_array($currentUser['role'], ['admin', 'staff'], true)): ?>
+                                <button type="button" 
+                                        class="btn btn-sm btn-danger delete-application-btn" 
+                                        data-id="<?= htmlspecialchars($app['id']) ?>">Delete</button>
+                            <?php endif; ?>
+                        </div>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <script>
 // AJAX Delete functionality
 document.addEventListener('DOMContentLoaded', function() {
-    const deleteButtons = document.querySelectorAll('.delete-btn');
+    const deleteButtons = document.querySelectorAll('.delete-application-btn');
     
     deleteButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -97,7 +99,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // Fetch API for AJAX delete
             fetch(`index.php?controller=applications&action=delete&id=${id}`, {
                 method: 'GET',
                 headers: {
@@ -107,7 +108,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Remove the row from the table
                     const row = document.getElementById(`row-${id}`);
                     if (row) {
                         row.remove();

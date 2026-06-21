@@ -20,6 +20,7 @@ $controllerMap = [
     'violation_records'    => 'ViolationRecordController',
     'scholarship_programs' => 'ScholarshipProgramController',
     'auth'                 => 'AuthController', // [NEW] login / logout
+    'dashboard'            => 'DashboardController', // [NEW] dashboard metrics
 
     // ===== Cụm 2 & 3: module của thành viên khác (controller nằm ở repo của họ) =====
     'scholarship_tiers'    => 'ScholarshipTierController',
@@ -31,6 +32,7 @@ $controllerMap = [
     'application_documents' => 'ApplicationDocumentController', // [NEW] Document upload module
     'disbursement'          => 'DisbursementController',
     'award_certificate'     => 'AwardCertificateController',
+    
 ];
 
 // Check if controller exists
@@ -58,7 +60,7 @@ $controller = new $controllerClass();
 
 // Map URL action to Controller method
 // Add 'show' to the array
-$allowedActions = ['index', 'show', 'create', 'store', 'edit', 'update', 'delete', 'login', 'doLogin', 'logout', 'export'];// 'login'/'doLogin'/'logout' -> AuthController, 'export' -> CSV export (violation_records) [NEW]
+$allowedActions = ['index', 'show', 'create', 'store', 'edit', 'update', 'delete', 'login', 'doLogin', 'logout', 'export', 'review', 'submitReview', 'exportCsv', 'exportHtml'];// 'login'/'doLogin'/'logout' -> AuthController, 'export' -> CSV export (violation_records) [NEW], 'review'/'submitReview' -> ApplicationController, 'exportCsv'/'exportHtml' -> DashboardController
 
 if (in_array($action, $allowedActions) && method_exists($controller, $action)) {
     $controller->$action();

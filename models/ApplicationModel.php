@@ -201,7 +201,7 @@ class ApplicationModel
             SELECT COUNT(*) 
             FROM scholarship_tiers st
             INNER JOIN scholarship_programs sp ON st.program_id = sp.id
-            WHERE st.id = ? AND sp.status = 'open'
+            WHERE st.id = ? AND sp.status = 'active'
         ");
         $stmt->execute([$tierId]);
         return (int)$stmt->fetchColumn() > 0;
@@ -242,5 +242,142 @@ class ApplicationModel
         $stmt->execute([$userId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result ? $result['id'] : false;
+    }
+
+    /**
+     * Get application with full details including student profile
+     * @param int $id Application ID
+     * @return array|false Application with student and profile data
+     */
+    public function getApplicationWithDetails(int $id): array|false
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                a.id,
+                a.user_id,
+                a.tier_id,
+                a.status,
+                a.applied_date,
+                u.full_name as student_name,
+                u.email as student_email,
+                sp.gpa,
+                sp.year_level,
+                sp.major,
+                st.tier_name,
+                sch.title as program_title
+            FROM applications a
+            INNER JOIN users u ON a.user_id = u.id
+            INNER JOIN student_profiles sp ON a.profile_id = sp.id
+            INNER JOIN scholarship_tiers st ON a.tier_id = st.id
+            INNER JOIN scholarship_programs sch ON st.program_id = sch.id
+            WHERE a.id = ?
+        ");
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get existing review for an application
+     * @param int $applicationId Application ID
+     * @return array|false Review data or false if not found
+     */
+    public function getReviewByApplicationId(int $applicationId): array|false
+    {
+        // Ensure table exists
+        $this->ensureReviewsTableExists();
+        
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                ar.id,
+                ar.application_id,
+                ar.reviewer_id,
+                ar.score,
+                ar.comment,
+                ar.created_at,
+                u.full_name as reviewer_name
+            FROM application_reviews ar
+            INNER JOIN users u ON ar.reviewer_id = u.id
+            WHERE ar.application_id = ?
+            ORDER BY ar.created_at DESC
+            LIMIT 1
+        ");
+        $stmt->execute([$applicationId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Save a review for an application
+     * @param array $data Review data (application_id, reviewer_id, score, comment)
+     * @return bool True on success
+     */
+    public function saveReview(array $data): bool
+    {
+        // Ensure table exists
+        $this->ensureReviewsTableExists();
+        
+        $stmt = $this->pdo->prepare("
+            INSERT INTO application_reviews 
+            (application_id, reviewer_id, score, comment) 
+            VALUES (?, ?, ?, ?)
+            ON DUPLICATE KEY UPDATE
+            score = VALUES(score),
+            comment = VALUES(comment),
+            created_at = NOW()
+        ");
+        
+        return $stmt->execute([
+            $data['application_id'],
+            $data['reviewer_id'],
+            $data['score'],
+            $data['comment']
+        ]);
+    }
+
+    /**
+     * Ensure the application_reviews table exists
+     * @return void
+     */
+    private function ensureReviewsTableExists(): void
+    {
+        $this->pdo->exec("
+            CREATE TABLE IF NOT EXISTS application_reviews (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                application_id INT NOT NULL,
+                reviewer_id INT NOT NULL,
+                score DECIMAL(5,2) NOT NULL,
+                comment TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE KEY unique_app_review (application_id),
+                FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
+                FOREIGN KEY (reviewer_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        ");
+    }
+    /**
+     * RE-01 FIX: Fetch only the applications explicitly assigned to a specific reviewer
+     * @param int $reviewerId
+     * @return array
+     */
+    public function getByReviewerId(int $reviewerId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                a.id,
+                a.user_id,
+                a.tier_id,
+                a.status,
+                a.applied_date,
+                u.full_name as student_name,
+                st.tier_name,
+                sp.title as program_title
+            FROM applications a
+            INNER JOIN users u ON a.user_id = u.id
+            INNER JOIN scholarship_tiers st ON a.tier_id = st.id
+            INNER JOIN scholarship_programs sp ON st.program_id = sp.id
+            WHERE a.reviewer_id = ?
+            ORDER BY a.id DESC
+        ");
+        $stmt->execute([$reviewerId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
