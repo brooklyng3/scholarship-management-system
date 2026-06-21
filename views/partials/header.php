@@ -41,6 +41,14 @@ $pageTitle = $pageTitle ?? 'Cụm 1 - Hệ thống & User';
                 <li class="nav-item"><a class="nav-link" href="<?= e(url('scoring_criteria', 'index')) ?>">Criteria</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= e(url('evaluation_scores', 'index')) ?>">Scores</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= e(url('application_documents', 'index')) ?>">App Documents</a></li>
+                <?php if (isset(current_user()['role']) && in_array(current_user()['role'], ['admin', 'reviewer', 'staff'], true)): ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?= (isset($_GET['controller']) && $_GET['controller'] === 'dashboard') ? 'active' : '' ?>" 
+                        href="<?= e(url('dashboard', 'index')) ?>">
+                            <i class="bi bi-graph-up-arrow"></i> Dashboard Thống kê
+                        </a>
+                    </li>
+                <?php endif; ?>
             </ul>
             <!-- [NEW] Login state / user menu -->
             <ul class="navbar-nav">
