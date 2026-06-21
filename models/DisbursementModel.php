@@ -37,7 +37,7 @@ class DisbursementModel
                     u.full_name as student_name,
                     sp.student_code,
                     sd.awarded_amount as decision_amount,
-                    sd.decision_status
+                    sd.final_status
                 FROM disbursements d
                 INNER JOIN scholarship_decisions sd ON d.decision_id = sd.id
                 INNER JOIN applications a ON sd.application_id = a.id
@@ -218,7 +218,7 @@ class DisbursementModel
                 INNER JOIN applications a ON sd.application_id = a.id
                 INNER JOIN student_profiles sp ON a.profile_id = sp.id
                 INNER JOIN users u ON sp.user_id = u.id
-                WHERE sd.decision_status = 'approved'
+                WHERE sd.final_status = 'approved'
                 ORDER BY u.full_name ASC";
         
         $stmt = $this->pdo->query($sql);
