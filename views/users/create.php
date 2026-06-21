@@ -1,18 +1,18 @@
 <?php
 /** Template: users/create — biến: $errors, $old */
-$pageTitle = 'Thêm Người dùng';
+$pageTitle = 'Add User';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="<?= e(url('users', 'index')) ?>">Người dùng</a></li>
-        <li class="breadcrumb-item active">Thêm mới</li>
+        <li class="breadcrumb-item"><a href="<?= e(url('users', 'index')) ?>">Users</a></li>
+        <li class="breadcrumb-item active">Add New</li>
     </ol>
 </nav>
 
 <div class="card shadow-sm" style="max-width:600px;">
-    <div class="card-header"><strong>➕ Thêm Người dùng Mới</strong></div>
+    <div class="card-header"><strong>➕ Add New User</strong></div>
     <div class="card-body">
         <?php if (!empty($errors)): ?>
             <div class="alert alert-danger">
@@ -27,7 +27,7 @@ require_once __DIR__ . '/../partials/header.php';
         <form method="POST" action="<?= e(url('users', 'store')) ?>">
             <?= csrf_field() /* [NEW] */ ?>
             <div class="mb-3">
-                <label class="form-label">Họ tên <span class="text-danger">*</span></label>
+                <label class="form-label">Full Name <span class="text-danger">*</span></label>
                 <input type="text" name="full_name" class="form-control" value="<?= e($old['full_name'] ?? '') ?>" required>
             </div>
             <div class="mb-3">
@@ -35,11 +35,11 @@ require_once __DIR__ . '/../partials/header.php';
                 <input type="email" name="email" class="form-control" value="<?= e($old['email'] ?? '') ?>" required>
             </div>
             <div class="mb-3">
-                <label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
-                <input type="password" name="password" class="form-control" placeholder="Tối thiểu 6 ký tự" required>
+                <label class="form-label">Password <span class="text-danger">*</span></label>
+                <input type="password" name="password" class="form-control" placeholder="Minimum 6 characters" required>
             </div>
             <div class="mb-3">
-                <label class="form-label">Vai trò <span class="text-danger">*</span></label>
+                <label class="form-label">Role <span class="text-danger">*</span></label>
                 <select name="role" class="form-select">
                     <option value="student" <?= ($old['role'] ?? 'student') === 'student' ? 'selected' : '' ?>>Student</option>
                     <option value="reviewer" <?= ($old['role'] ?? '') === 'reviewer' ? 'selected' : '' ?>>Reviewer</option>
@@ -47,8 +47,8 @@ require_once __DIR__ . '/../partials/header.php';
                 </select>
             </div>
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Lưu</button>
-                <a href="<?= e(url('users', 'index')) ?>" class="btn btn-outline-secondary">Hủy</a>
+                <button type="submit" class="btn btn-primary">Save</button>
+                <a href="<?= e(url('users', 'index')) ?>" class="btn btn-outline-secondary">Cancel</a>
             </div>
         </form>
     </div>

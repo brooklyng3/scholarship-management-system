@@ -63,10 +63,10 @@ class UserController
 
         if (empty($errors)) {
             if ($this->userModel->create($data)) {
-                set_flash('success', 'Tạo người dùng thành công.');
+                set_flash('success', 'User created successfully.');
                 redirect(url('users', 'index'));
             }
-            $errors[] = 'Không thể tạo người dùng. Vui lòng thử lại.';
+            $errors[] = 'Unable to create user. Please try again.';
         }
 
         $this->render('users/create', ['errors' => $errors, 'old' => $data]);
@@ -96,7 +96,7 @@ class UserController
         $id = (int)($_GET['id'] ?? 0);
         $user = $this->userModel->getById($id);
         if (!$user) {
-            set_flash('error', 'Không tìm thấy người dùng.');
+            set_flash('error', 'User not found.');
             redirect(url('users', 'index'));
         }
 
@@ -111,10 +111,10 @@ class UserController
 
         if (empty($errors)) {
             if ($this->userModel->update($id, $data)) {
-                set_flash('success', 'Cập nhật người dùng thành công.');
+                set_flash('success', 'User updated successfully.');
                 redirect(url('users', 'index'));
             }
-            $errors[] = 'Không thể cập nhật người dùng. Vui lòng thử lại.';
+            $errors[] = 'Unable to update user. Please try again.';
         }
 
         $user = array_merge($user, $data);
@@ -130,15 +130,15 @@ class UserController
         $id = (int)($_GET['id'] ?? 0);
         $user = $this->userModel->getById($id);
         if (!$user) {
-            set_flash('error', 'Không tìm thấy người dùng.');
+            set_flash('error', 'User not found.');
             redirect(url('users', 'index'));
         }
 
         // users có FK ON DELETE CASCADE tới student_profiles/staff_profiles/violation_records
         if ($this->userModel->delete($id)) {
-            set_flash('success', 'Đã xóa người dùng "' . $user['full_name'] . '" (và các hồ sơ liên quan).');
+            set_flash('success', 'User "' . $user['full_name'] . '" deleted (along with related records).');
         } else {
-            set_flash('error', 'Không thể xóa người dùng này.');
+            set_flash('error', 'Unable to delete this user.');
         }
 
         redirect(url('users', 'index'));
@@ -149,27 +149,27 @@ class UserController
         $errors = [];
 
         if ($data['email'] === '') {
-            $errors[] = 'Email không được để trống.';
+            $errors[] = 'Email cannot be empty.';
         } elseif (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
-            $errors[] = 'Email không đúng định dạng.';
+            $errors[] = 'Email format is invalid.';
         } elseif ($this->userModel->emailExists($data['email'], $excludeId)) {
-            $errors[] = 'Email này đã được sử dụng.';
+            $errors[] = 'This email is already in use.';
         }
 
         if ($data['full_name'] === '') {
-            $errors[] = 'Họ tên không được để trống.';
+            $errors[] = 'Full name cannot be empty.';
         }
 
         if (!in_array($data['role'], ['admin', 'student', 'reviewer'], true)) {
-            $errors[] = 'Vai trò (role) không hợp lệ.';
+            $errors[] = 'Role is invalid.';
         }
 
         if ($isCreate && $data['password'] === '') {
-            $errors[] = 'Mật khẩu không được để trống.';
+            $errors[] = 'Password cannot be empty.';
         } elseif (!$isCreate && $data['password'] !== '' && strlen($data['password']) < 6) {
-            $errors[] = 'Mật khẩu mới phải có ít nhất 6 ký tự.';
+            $errors[] = 'New password must be at least 6 characters.';
         } elseif ($isCreate && strlen($data['password']) < 6) {
-            $errors[] = 'Mật khẩu phải có ít nhất 6 ký tự.';
+            $errors[] = 'Password must be at least 6 characters.';
         }
 
         return $errors;

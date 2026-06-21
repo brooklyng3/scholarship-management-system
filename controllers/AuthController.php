@@ -27,18 +27,18 @@ class AuthController
 
         if ($user) {
             $_SESSION['user'] = $user;
-            set_flash('success', 'Đăng nhập thành công. Xin chào ' . $user['full_name'] . '!');
+            set_flash('success', 'Login successful. Welcome ' . $user['full_name'] . '!');
             redirect(url('scholarship_programs', 'index'));
         }
 
-        $this->render('auth/login', ['errors' => ['Email hoặc mật khẩu không đúng.']]);
+        $this->render('auth/login', ['errors' => ['Email or password is incorrect.']]);
     }
 
     /** Đăng xuất: hủy session */
     public function logout(): void
     {
         unset($_SESSION['user']);
-        set_flash('success', 'Bạn đã đăng xuất.');
+        set_flash('success', 'You have been logged out.');
         redirect(url('auth', 'login'));
     }
 

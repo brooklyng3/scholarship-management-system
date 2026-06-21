@@ -27,7 +27,7 @@ function is_logged_in(): bool
 function require_login(): void
 {
     if (!is_logged_in()) {
-        set_flash('error', 'Vui lòng đăng nhập để tiếp tục.');
+        set_flash('error', 'Please login to continue.');
         redirect(url('auth', 'login'));
     }
 }
@@ -41,7 +41,7 @@ function require_role(array $allowedRoles): void
     require_login();
     $user = current_user();
     if (!in_array($user['role'], $allowedRoles, true)) {
-        set_flash('error', 'Bạn không có quyền thực hiện thao tác này (yêu cầu vai trò: ' . implode(', ', $allowedRoles) . ').');
+        set_flash('error', 'You do not have permission to perform this action (required role: ' . implode(', ', $allowedRoles) . ').');
         redirect(url('scholarship_programs', 'index'));
     }
 }
