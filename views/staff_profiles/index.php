@@ -4,23 +4,23 @@
  * @var string $q
  * @var string $pagination
  */
-$pageTitle = 'Hồ sơ Cán bộ';
+$pageTitle = 'Staff Profiles';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">🏢 Hồ sơ Cán bộ (staff_profiles)</h4>
-    <a href="<?= e(url('staff_profiles', 'create')) ?>" class="btn btn-primary">+ Thêm hồ sơ</a>
+    <h4 class="mb-0">🏢 Staff Profiles</h4>
+    <a href="<?= e(url('staff_profiles', 'create')) ?>" class="btn btn-primary">+ Add Profile</a>
 </div>
 
 <!-- [NEW] Search box -->
 <form method="GET" action="index.php" class="row g-2 mb-3">
     <input type="hidden" name="controller" value="staff_profiles">
     <div class="col-auto">
-        <input type="text" name="q" class="form-control" placeholder="Tìm theo mã CB, tên, phòng ban..." value="<?= e($q) ?>">
+        <input type="text" name="q" class="form-control" placeholder="Search by staff code, name, department..." value="<?= e($q) ?>">
     </div>
     <div class="col-auto">
-        <button type="submit" class="btn btn-outline-secondary">Tìm</button>
+        <button type="submit" class="btn btn-outline-secondary">Search</button>
     </div>
 </form>
 
@@ -31,18 +31,18 @@ require_once __DIR__ . '/../partials/header.php';
                 <thead class="table-dark">
                     <tr>
                         <th>#</th>
-                        <th>Mã cán bộ</th>
-                        <th>Họ tên</th>
+                        <th>Staff Code</th>
+                        <th>Full Name</th>
                         <th>Email</th>
-                        <th>Vai trò</th>
-                        <th>Phòng/Ban</th>
-                        <th>Cập nhật lúc</th>
-                        <th class="text-center">Thao tác</th>
+                        <th>Role</th>
+                        <th>Department</th>
+                        <th>Updated At</th>
+                        <th class="text-center">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php if (empty($profiles)): ?>
-                    <tr><td colspan="8" class="text-center text-muted py-4">Chưa có hồ sơ cán bộ nào.</td></tr>
+                    <tr><td colspan="8" class="text-center text-muted py-4">No staff profiles found.</td></tr>
                 <?php else: ?>
                     <?php foreach ($profiles as $p): ?>
                     <tr>
@@ -57,10 +57,10 @@ require_once __DIR__ . '/../partials/header.php';
                         <td><?= e($p['department']) ?: '<span class="text-muted">—</span>' ?></td>
                         <td><?= e($p['updated_at']) ?></td>
                         <td class="text-center">
-                            <a href="<?= e(url('staff_profiles', 'edit', ['id' => $p['id']])) ?>" class="btn btn-sm btn-outline-primary">Sửa</a>
+                            <a href="<?= e(url('staff_profiles', 'edit', ['id' => $p['id']])) ?>" class="btn btn-sm btn-outline-primary">Edit</a>
                             <a href="<?= e(url('staff_profiles', 'delete', ['id' => $p['id'], 'csrf_token' => csrf_token()])) ?>"
                                class="btn btn-sm btn-outline-danger"
-                               onclick="return confirm('Xóa hồ sơ cán bộ này?')">Xóa</a>
+                               onclick="return confirm('Delete this staff profile?')">Delete</a>
                         </td>
                     </tr>
                     <?php endforeach; ?>

@@ -55,10 +55,10 @@ class StudentProfileController
 
         if (empty($errors)) {
             if ($this->model->create($data)) {
-                set_flash('success', 'Tạo hồ sơ sinh viên thành công.');
+                set_flash('success', 'Student profile created successfully.');
                 redirect(url('student_profiles', 'index'));
             }
-            $errors[] = 'Không thể tạo hồ sơ. Vui lòng thử lại.';
+            $errors[] = 'Unable to create profile. Please try again.';
         }
 
         $availableUsers = $this->model->getStudentUsersWithoutProfile();
@@ -72,7 +72,7 @@ class StudentProfileController
         $id = (int)($_GET['id'] ?? 0);
         $profile = $this->model->getById($id);
         if (!$profile) {
-            set_flash('error', 'Không tìm thấy hồ sơ sinh viên.');
+            set_flash('error', 'Student profile not found.');
             redirect(url('student_profiles', 'index'));
         }
 
@@ -87,7 +87,7 @@ class StudentProfileController
         $id = (int)($_GET['id'] ?? 0);
         $profile = $this->model->getById($id);
         if (!$profile) {
-            set_flash('error', 'Không tìm thấy hồ sơ sinh viên.');
+            set_flash('error', 'Student profile not found.');
             redirect(url('student_profiles', 'index'));
         }
 
@@ -104,10 +104,10 @@ class StudentProfileController
 
         if (empty($errors)) {
             if ($this->model->update($id, $data)) {
-                set_flash('success', 'Cập nhật hồ sơ sinh viên thành công.');
+                set_flash('success', 'Student profile updated successfully.');
                 redirect(url('student_profiles', 'index'));
             }
-            $errors[] = 'Không thể cập nhật hồ sơ. Vui lòng thử lại.';
+            $errors[] = 'Unable to update profile. Please try again.';
         }
 
         $profile = array_merge($profile, $data);
@@ -122,14 +122,14 @@ class StudentProfileController
         $id = (int)($_GET['id'] ?? 0);
         $profile = $this->model->getById($id);
         if (!$profile) {
-            set_flash('error', 'Không tìm thấy hồ sơ sinh viên.');
+            set_flash('error', 'Student profile not found.');
             redirect(url('student_profiles', 'index'));
         }
 
         if ($this->model->delete($id)) {
-            set_flash('success', 'Đã xóa hồ sơ sinh viên "' . $profile['full_name'] . '".');
+            set_flash('success', 'Student profile "' . $profile['full_name'] . '" deleted.');
         } else {
-            set_flash('error', 'Không thể xóa hồ sơ này.');
+            set_flash('error', 'Unable to delete this profile.');
         }
 
         redirect(url('student_profiles', 'index'));
@@ -140,29 +140,29 @@ class StudentProfileController
         $errors = [];
 
         if ($isCreate && $data['user_id'] <= 0) {
-            $errors[] = 'Vui lòng chọn tài khoản sinh viên.';
+            $errors[] = 'Please select a student account.';
         }
 
         if ($data['student_code'] === '') {
-            $errors[] = 'Mã sinh viên không được để trống.';
+            $errors[] = 'Student code cannot be empty.';
         } elseif ($this->model->studentCodeExists($data['student_code'], $excludeId)) {
-            $errors[] = 'Mã sinh viên này đã tồn tại.';
+            $errors[] = 'This student code already exists.';
         }
 
         if ($data['full_name'] === '') {
-            $errors[] = 'Họ tên không được để trống.';
+            $errors[] = 'Full name cannot be empty.';
         }
 
         if ($data['current_gpa'] !== '' && (!is_numeric($data['current_gpa']) || $data['current_gpa'] < 0 || $data['current_gpa'] > 4)) {
-            $errors[] = 'GPA phải là số từ 0.00 đến 4.00.';
+            $errors[] = 'GPA must be a number from 0.00 to 4.00.';
         }
 
         if ($data['accumulated_credits'] !== '' && (!ctype_digit($data['accumulated_credits']) || (int)$data['accumulated_credits'] < 0)) {
-            $errors[] = 'Số tín chỉ tích lũy phải là số nguyên không âm.';
+            $errors[] = 'Accumulated credits must be a non-negative integer.';
         }
 
         if ($data['conduct_score'] !== '' && (!ctype_digit($data['conduct_score']) || (int)$data['conduct_score'] < 0 || (int)$data['conduct_score'] > 100)) {
-            $errors[] = 'Điểm rèn luyện phải từ 0 đến 100.';
+            $errors[] = 'Conduct score must be from 0 to 100.';
         }
 
         return $errors;

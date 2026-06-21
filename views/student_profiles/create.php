@@ -1,18 +1,18 @@
 <?php
 /** Template: student_profiles/create — biến: $errors, $old, $availableUsers */
-$pageTitle = 'Thêm Hồ sơ Sinh viên';
+$pageTitle = 'Add Student Profile';
 require_once __DIR__ . '/../partials/header.php';
 ?>
 
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="<?= e(url('student_profiles', 'index')) ?>">Hồ sơ Sinh viên</a></li>
-        <li class="breadcrumb-item active">Thêm mới</li>
+        <li class="breadcrumb-item"><a href="<?= e(url('student_profiles', 'index')) ?>">Student Profiles</a></li>
+        <li class="breadcrumb-item active">Add New</li>
     </ol>
 </nav>
 
 <div class="card shadow-sm" style="max-width:640px;">
-    <div class="card-header"><strong>➕ Tạo Hồ sơ Sinh viên</strong></div>
+    <div class="card-header"><strong>➕ Create Student Profile</strong></div>
     <div class="card-body">
         <?php if (!empty($errors)): ?>
             <div class="alert alert-danger">
@@ -21,7 +21,7 @@ require_once __DIR__ . '/../partials/header.php';
         <?php endif; ?>
 
         <?php if (empty($availableUsers)): ?>
-            <div class="alert alert-warning">Tất cả tài khoản student đều đã có hồ sơ. <a href="<?= e(url('users', 'create')) ?>">Tạo tài khoản mới</a> trước.</div>
+            <div class="alert alert-warning">All student accounts already have profiles. <a href="<?= e(url('users', 'create')) ?>">Create a new account</a> first.</div>
         <?php else: ?>
         <form method="POST" action="<?= e(url('student_profiles', 'store')) ?>">
             <?= csrf_field() /* [NEW] */ ?>

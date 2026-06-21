@@ -52,10 +52,10 @@ class StaffProfileController
 
         if (empty($errors)) {
             if ($this->model->create($data)) {
-                set_flash('success', 'Tạo hồ sơ cán bộ thành công.');
+                set_flash('success', 'Staff profile created successfully.');
                 redirect(url('staff_profiles', 'index'));
             }
-            $errors[] = 'Không thể tạo hồ sơ. Vui lòng thử lại.';
+            $errors[] = 'Unable to create profile. Please try again.';
         }
 
         $availableUsers = $this->model->getStaffUsersWithoutProfile();
@@ -69,7 +69,7 @@ class StaffProfileController
         $id = (int)($_GET['id'] ?? 0);
         $profile = $this->model->getById($id);
         if (!$profile) {
-            set_flash('error', 'Không tìm thấy hồ sơ cán bộ.');
+            set_flash('error', 'Staff profile not found.');
             redirect(url('staff_profiles', 'index'));
         }
 
@@ -84,7 +84,7 @@ class StaffProfileController
         $id = (int)($_GET['id'] ?? 0);
         $profile = $this->model->getById($id);
         if (!$profile) {
-            set_flash('error', 'Không tìm thấy hồ sơ cán bộ.');
+            set_flash('error', 'Staff profile not found.');
             redirect(url('staff_profiles', 'index'));
         }
 
@@ -97,10 +97,10 @@ class StaffProfileController
 
         if (empty($errors)) {
             if ($this->model->update($id, $data)) {
-                set_flash('success', 'Cập nhật hồ sơ cán bộ thành công.');
+                set_flash('success', 'Staff profile updated successfully.');
                 redirect(url('staff_profiles', 'index'));
             }
-            $errors[] = 'Không thể cập nhật hồ sơ. Vui lòng thử lại.';
+            $errors[] = 'Unable to update profile. Please try again.';
         }
 
         $profile = array_merge($profile, $data);
@@ -115,14 +115,14 @@ class StaffProfileController
         $id = (int)($_GET['id'] ?? 0);
         $profile = $this->model->getById($id);
         if (!$profile) {
-            set_flash('error', 'Không tìm thấy hồ sơ cán bộ.');
+            set_flash('error', 'Staff profile not found.');
             redirect(url('staff_profiles', 'index'));
         }
 
         if ($this->model->delete($id)) {
-            set_flash('success', 'Đã xóa hồ sơ cán bộ mã "' . $profile['staff_code'] . '".');
+            set_flash('success', 'Staff profile "' . $profile['staff_code'] . '" deleted.');
         } else {
-            set_flash('error', 'Không thể xóa hồ sơ này.');
+            set_flash('error', 'Unable to delete this profile.');
         }
 
         redirect(url('staff_profiles', 'index'));
@@ -133,13 +133,13 @@ class StaffProfileController
         $errors = [];
 
         if ($isCreate && $data['user_id'] <= 0) {
-            $errors[] = 'Vui lòng chọn tài khoản cán bộ/admin/reviewer.';
+            $errors[] = 'Please select a staff/admin/reviewer account.';
         }
 
         if ($data['staff_code'] === '') {
-            $errors[] = 'Mã cán bộ không được để trống.';
+            $errors[] = 'Staff code cannot be empty.';
         } elseif ($this->model->staffCodeExists($data['staff_code'], $excludeId)) {
-            $errors[] = 'Mã cán bộ này đã tồn tại.';
+            $errors[] = 'This staff code already exists.';
         }
 
         return $errors;
