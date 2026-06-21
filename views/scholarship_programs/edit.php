@@ -1,5 +1,10 @@
 <?php
-/** Template: scholarship_programs/edit — biến: $program, $errors, $types, $statuses */
+/**
+ * @var array $program
+ * @var array $errors
+ * @var array $types
+ * @var array $statuses
+ */
 $pageTitle = 'Sửa Chương trình Học bổng';
 require_once __DIR__ . '/../partials/header.php';
 ?>

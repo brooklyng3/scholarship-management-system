@@ -1,5 +1,8 @@
 <?php
-/** Template: staff_profiles/edit — biến: $profile, $errors */
+/**
+ * @var array $profile
+ * @var array $errors
+ */
 $pageTitle = 'Sửa Hồ sơ Cán bộ';
 require_once __DIR__ . '/../partials/header.php';
 ?>

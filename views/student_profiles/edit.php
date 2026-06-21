@@ -1,5 +1,8 @@
 <?php
-/** Template: student_profiles/edit — biến: $profile, $errors */
+/**
+ * @var array $profile
+ * @var array $errors
+ */
 $pageTitle = 'Sửa Hồ sơ Sinh viên';
 require_once __DIR__ . '/../partials/header.php';
 ?>

@@ -1,5 +1,9 @@
 <?php
-/** Template: staff_profiles/index — biến: $profiles, $q, $pagination (chỉ Admin xem được, do controller require_role) */
+/**
+ * @var array $profiles
+ * @var string $q
+ * @var string $pagination
+ */
 $pageTitle = 'Hồ sơ Cán bộ';
 require_once __DIR__ . '/../partials/header.php';
 ?>

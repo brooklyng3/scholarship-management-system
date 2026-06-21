@@ -1,9 +1,13 @@
 <?php
-/** Template: scholarship_programs/create — biến: $errors, $old, $types, $statuses */
+/**
+ * @var array $errors
+ * @var array $old
+ * @var array $types
+ * @var array $statuses
+ */
 $pageTitle = 'Thêm Chương trình Học bổng';
 require_once __DIR__ . '/../partials/header.php';
 ?>
-
 <nav aria-label="breadcrumb" class="mb-3">
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="<?= e(url('scholarship_programs', 'index')) ?>">Chương trình HB</a></li>

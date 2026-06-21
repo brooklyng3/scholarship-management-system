@@ -1,7 +1,10 @@
 <?php
 /**
  * Template: users/index
- * Biến truyền vào từ UserController::index(): $users, $currentRole, $q, $pagination
+ * @var array $users
+ * @var string $currentRole
+ * @var string $q
+ * @var string $pagination
  */
 $pageTitle = 'Danh sách Người dùng';
 require_once __DIR__ . '/../partials/header.php';

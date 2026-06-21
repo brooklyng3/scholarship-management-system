@@ -1,5 +1,9 @@
 <?php
-/** Template: student_profiles/index — biến: $profiles, $q, $pagination */
+/**
+ * @var array $profiles
+ * @var string $q
+ * @var string $pagination
+ */
 $pageTitle = 'Hồ sơ Sinh viên';
 require_once __DIR__ . '/../partials/header.php';
 $canManage = is_logged_in() && in_array(current_user()['role'], ['admin', 'reviewer'], true); // [NEW]

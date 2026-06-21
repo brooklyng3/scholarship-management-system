@@ -1,5 +1,9 @@
 <?php
-/** Template: users/edit — biến: $user, $errors */
+/**
+ * Template: users/edit
+ * @var array $user
+ * @var array $errors
+ */
 $pageTitle = 'Sửa Người dùng';
 require_once __DIR__ . '/../partials/header.php';
 ?>

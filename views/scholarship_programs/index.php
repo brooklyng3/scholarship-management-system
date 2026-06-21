@@ -1,5 +1,12 @@
 <?php
-/** Template: scholarship_programs/index — biến: $programs, $types, $statuses, $q, $status, $pagination */
+/**
+ * @var array $programs
+ * @var array $types
+ * @var array $statuses
+ * @var string $status
+ * @var string $q
+ * @var string $pagination
+ */
 $pageTitle = 'Chương trình Học bổng';
 require_once __DIR__ . '/../partials/header.php';
 $isAdmin = is_logged_in() && current_user()['role'] === 'admin'; // [NEW]
