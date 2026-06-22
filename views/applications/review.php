@@ -52,8 +52,8 @@ require_once __DIR__ . '/../partials/header.php';
                         <td><strong><?= e($application['training_score'] ?? '0') ?></strong> / 100</td>
                     </tr>
                     <tr>
-                        <th>Year Level:</th>
-                        <td><?= e($application['year_level'] ?? 'N/A') ?></td>
+                        <th>Accumulated Credits:</th>
+                        <td><?= e($application['accumulated_credits'] ?? 'N/A') ?></td>
                     </tr>
                     <tr>
                         <th>Major:</th>

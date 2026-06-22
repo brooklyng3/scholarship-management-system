@@ -83,12 +83,12 @@ $isAdmin = in_array($currentUser['role'], ['admin', 'reviewer'], true);
                 </div>
 
                 <div class="col mb-3">
-                    <label class="form-label">Conduct Score <small class="text-muted">(0–100)</small></label>
+                    <label class="form-label">Training Score (Điểm rèn luyện) <small class="text-muted">(0–100)</small></label>
                     <?php if ($isStudent): ?>
-                        <p class="form-control-plaintext border rounded px-3 py-2 bg-light"><?= e($profile['conduct_score']) ?></p>
+                        <p class="form-control-plaintext border rounded px-3 py-2 bg-light"><?= e($profile['training_score']) ?></p>
                     <?php else: ?>
-                        <input type="number" min="0" max="100" name="conduct_score" class="form-control"
-                               value="<?= e($profile['conduct_score']) ?>">
+                        <input type="number" min="0" max="100" name="training_score" class="form-control"
+                               value="<?= e($profile['training_score']) ?>">
                     <?php endif; ?>
                 </div>
             </div>

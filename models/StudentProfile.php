@@ -3,8 +3,8 @@ require_once __DIR__ . '/../config/database.php';
 
 /**
  * Model cho bảng `student_profiles` (Subtype của users, role = student)
- * Cột: id, user_id, student_code, full_name, major, current_gpa,
- *      accumulated_credits, conduct_score, updated_at
+ * Cột: id, user_id, student_code, major, current_gpa,
+ *      accumulated_credits, training_score, updated_at
  */
 class StudentProfile
 {
@@ -18,7 +18,7 @@ class StudentProfile
     /** Lấy danh sách hồ sơ sinh viên kèm email từ bảng users */
     public function getAll(): array
     {
-        $sql = "SELECT sp.*, u.email
+        $sql = "SELECT sp.*, u.email, u.full_name
                 FROM student_profiles sp
                 INNER JOIN users u ON u.id = sp.user_id
                 ORDER BY sp.id ASC";
@@ -31,10 +31,10 @@ class StudentProfile
 
     public function search(string $keyword, int $limit, int $offset): array
     {
-        $sql = "SELECT sp.*, u.email
+        $sql = "SELECT sp.*, u.email, u.full_name
                 FROM student_profiles sp
                 INNER JOIN users u ON u.id = sp.user_id
-                WHERE sp.student_code LIKE :kw1 OR sp.full_name LIKE :kw2 OR sp.major LIKE :kw3
+                WHERE sp.student_code LIKE :kw1 OR u.full_name LIKE :kw2 OR sp.major LIKE :kw3
                 ORDER BY sp.id ASC
                 LIMIT :limit OFFSET :offset";
         $kw = '%' . $keyword . '%';
@@ -50,8 +50,9 @@ class StudentProfile
 
     public function countSearch(string $keyword): int
     {
-        $sql = "SELECT COUNT(*) FROM student_profiles
-                WHERE student_code LIKE :kw1 OR full_name LIKE :kw2 OR major LIKE :kw3";
+        $sql = "SELECT COUNT(*) FROM student_profiles sp
+                INNER JOIN users u ON u.id = sp.user_id
+                WHERE sp.student_code LIKE :kw1 OR u.full_name LIKE :kw2 OR sp.major LIKE :kw3";
         $kw = '%' . $keyword . '%';
         $stmt = $this->db->prepare($sql);
         $stmt->execute(['kw1' => $kw, 'kw2' => $kw, 'kw3' => $kw]);
@@ -60,7 +61,7 @@ class StudentProfile
 
     public function getById(int $id): array|false
     {
-        $sql = "SELECT sp.*, u.email
+        $sql = "SELECT sp.*, u.email, u.full_name
                 FROM student_profiles sp
                 INNER JOIN users u ON u.id = sp.user_id
                 WHERE sp.id = :id";
@@ -114,19 +115,18 @@ class StudentProfile
     public function create(array $data): bool
     {
         $sql = "INSERT INTO student_profiles
-                    (user_id, student_code, full_name, major, current_gpa, accumulated_credits, conduct_score, updated_at)
+                    (user_id, student_code, major, current_gpa, accumulated_credits, training_score, updated_at)
                 VALUES
-                    (:user_id, :student_code, :full_name, :major, :current_gpa, :accumulated_credits, :conduct_score, NOW())";
+                    (:user_id, :student_code, :major, :current_gpa, :accumulated_credits, :training_score, NOW())";
         $stmt = $this->db->prepare($sql);
 
         return $stmt->execute([
             'user_id'             => $data['user_id'],
             'student_code'       => $data['student_code'],
-            'full_name'           => $data['full_name'],
             'major'               => $data['major'],
             'current_gpa'         => $data['current_gpa'] !== '' ? $data['current_gpa'] : null,
             'accumulated_credits' => $data['accumulated_credits'] !== '' ? $data['accumulated_credits'] : null,
-            'conduct_score'       => $data['conduct_score'] !== '' ? $data['conduct_score'] : null,
+            'training_score'      => $data['training_score'] !== '' ? $data['training_score'] : 0,
         ]);
     }
 
@@ -134,22 +134,20 @@ class StudentProfile
     {
         $sql = "UPDATE student_profiles
                 SET student_code = :student_code,
-                    full_name = :full_name,
                     major = :major,
                     current_gpa = :current_gpa,
                     accumulated_credits = :accumulated_credits,
-                    conduct_score = :conduct_score,
+                    training_score = :training_score,
                     updated_at = NOW()
                 WHERE id = :id";
         $stmt = $this->db->prepare($sql);
 
         return $stmt->execute([
             'student_code'        => $data['student_code'],
-            'full_name'           => $data['full_name'],
             'major'               => $data['major'],
             'current_gpa'         => $data['current_gpa'] !== '' ? $data['current_gpa'] : null,
             'accumulated_credits' => $data['accumulated_credits'] !== '' ? $data['accumulated_credits'] : null,
-            'conduct_score'       => $data['conduct_score'] !== '' ? $data['conduct_score'] : null,
+            'training_score'      => $data['training_score'] !== '' ? $data['training_score'] : 0,
             'id'                  => $id,
         ]);
     }

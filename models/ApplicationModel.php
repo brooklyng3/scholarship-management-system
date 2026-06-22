@@ -260,14 +260,14 @@ class ApplicationModel
                 a.applied_date,
                 u.full_name as student_name,
                 u.email as student_email,
-                sp.gpa,
-                sp.year_level,
+                sp.current_gpa as gpa,
                 sp.major,
-                sp.training_score,       -- UPDATED: Pulls student's actual training score
+                sp.training_score,
+                sp.accumulated_credits,
                 st.tier_name,
                 sch.title as program_title,
-                sch.min_gpa,              -- UPDATED: Pulls program eligibility requirement
-                sch.min_training_score    -- UPDATED: Pulls program eligibility requirement
+                sch.min_gpa,
+                sch.min_training_score
             FROM applications a
             INNER JOIN users u ON a.user_id = u.id
             INNER JOIN student_profiles sp ON a.profile_id = sp.id

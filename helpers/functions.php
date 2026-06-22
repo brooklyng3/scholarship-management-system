@@ -7,6 +7,16 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+/**
+ * Shorthand helper function to escape HTML output safely (XSS Mitigation)
+ * @param mixed $value The string or value to escape
+ * @return string Escaped string safe for HTML rendering
+ */
+function e(mixed $value): string
+{
+    return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
+}
+
 /** Đặt flash message để hiển thị ở trang kế tiếp */
 function set_flash(string $type, string $message): void
 {
@@ -41,11 +51,7 @@ function get_flash(?string $type = null) {
     return null;
 }
 
-/** Escape chuỗi để hiển thị an toàn trong HTML */
-function e(?string $value): string
-{
-    return htmlspecialchars($value ?? '', ENT_QUOTES, 'UTF-8');
-}
+
 
 /** Redirect tới URL chỉ định và dừng thực thi */
 function redirect(string $url): void
@@ -125,3 +131,4 @@ function render_pagination(int $currentPage, int $totalItems, int $perPage, stri
 
     return $html;
 }
+?>

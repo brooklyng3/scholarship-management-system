@@ -60,9 +60,9 @@ require_once __DIR__ . '/../partials/header.php';
                            value="<?= e($old['accumulated_credits'] ?? '') ?>">
                 </div>
                 <div class="col mb-3">
-                    <label class="form-label">Điểm rèn luyện <small class="text-muted">(0–100)</small></label>
-                    <input type="number" min="0" max="100" name="conduct_score" class="form-control"
-                           value="<?= e($old['conduct_score'] ?? '') ?>">
+                    <label class="form-label">Training Score (Điểm rèn luyện) <small class="text-muted">(0–100)</small></label>
+                    <input type="number" min="0" max="100" name="training_score" class="form-control"
+                           value="<?= e($old['training_score'] ?? '') ?>">
                 </div>
             </div>
             <div class="d-flex gap-2">

@@ -4,6 +4,7 @@
  * @var array $students List of all students (for admin choice)
  * @var array $tiers List of all scholarship tiers
  * @var array $errors List of validation errors
+ * @var array $documents List of attached files for this application
  */
 
 $pageTitle = 'Edit Application #' . $application['id'];
@@ -36,14 +37,13 @@ $isStudent = ($currentUser['role'] === 'student');
             </div>
         <?php endif; ?>
 
-        <form method="POST" action="index.php?controller=applications&action=update" id="editApplicationForm">
+        <form method="POST" action="index.php?controller=applications&action=update" id="editApplicationForm" enctype="multipart/form-data">
             <input type="hidden" name="id" value="<?= htmlspecialchars($application['id']) ?>">
 
             <div class="mb-3">
                 <label class="form-label">Student</label>
                 <?php if ($isStudent): ?>
                     <?php 
-                        // Find the matching student details from the array to display name/email
                         $currentStudentLabel = $currentUser['full_name'] . ' (' . $currentUser['email'] . ')';
                     ?>
                     <p class="form-control-plaintext border rounded px-3 py-2 bg-light">
@@ -92,6 +92,35 @@ $isStudent = ($currentUser['role'] === 'student');
                         <option value="rejected" <?= ($application['status'] === 'rejected') ? 'selected' : '' ?>>Rejected</option>
                     </select>
                 <?php endif; ?>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label font-weight-bold">Attached Supporting Documents</label>
+                <?php if (!empty($documents)): ?>
+                    <div class="list-group mb-2">
+                        <?php foreach ($documents as $doc): ?>
+                            <div class="list-group-item d-flex justify-content-between align-items-center bg-light">
+                                <a href="<?= htmlspecialchars($doc['file_url']) ?>" target="_blank" class="text-decoration-none">
+                                    📄 <?= htmlspecialchars(basename($doc['file_url'])) ?>
+                                </a>
+                                <div class="form-check">
+                                    <input class="form-check-input text-danger" type="checkbox" name="delete_documents[]" value="<?= htmlspecialchars($doc['id']) ?>" id="del_doc_<?= $doc['id'] ?>">
+                                    <label class="form-check-label text-danger small font-weight-bold" for="del_doc_<?= $doc['id'] ?>">
+                                        Remove file
+                                    </label>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <p class="text-muted small border rounded p-2 bg-light">No documents uploaded yet.</p>
+                <?php endif; ?>
+            </div>
+
+            <div class="mb-3">
+                <label for="proof_document" class="form-label">Upload Additional / Replacement Document</label>
+                <input type="file" name="proof_document" id="proof_document" class="form-control">
+                <div class="form-text text-muted small">Max file size: 5MB. Permitted types: PDF, JPG, JPEG, PNG.</div>
             </div>
 
             <div class="d-flex gap-2 mt-4">
