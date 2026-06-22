@@ -245,7 +245,7 @@ class ApplicationModel
     }
 
     /**
-     * Get application with full details including student profile
+     * Get application with full details including student profile and thresholds
      * @param int $id Application ID
      * @return array|false Application with student and profile data
      */
@@ -263,8 +263,11 @@ class ApplicationModel
                 sp.gpa,
                 sp.year_level,
                 sp.major,
+                sp.training_score,       -- UPDATED: Pulls student's actual training score
                 st.tier_name,
-                sch.title as program_title
+                sch.title as program_title,
+                sch.min_gpa,              -- UPDATED: Pulls program eligibility requirement
+                sch.min_training_score    -- UPDATED: Pulls program eligibility requirement
             FROM applications a
             INNER JOIN users u ON a.user_id = u.id
             INNER JOIN student_profiles sp ON a.profile_id = sp.id

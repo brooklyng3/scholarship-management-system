@@ -48,6 +48,10 @@ require_once __DIR__ . '/../partials/header.php';
                         <td><?= e($application['gpa'] ?? 'N/A') ?></td>
                     </tr>
                     <tr>
+                        <th>Training Score (ĐRL):</th>
+                        <td><strong><?= e($application['training_score'] ?? '0') ?></strong> / 100</td>
+                    </tr>
+                    <tr>
                         <th>Year Level:</th>
                         <td><?= e($application['year_level'] ?? 'N/A') ?></td>
                     </tr>
@@ -76,6 +80,14 @@ require_once __DIR__ . '/../partials/header.php';
                     <tr>
                         <th>Tier:</th>
                         <td><?= e($application['tier_name']) ?></td>
+                    </tr>
+                    <tr>
+                        <th>Required Min GPA:</th>
+                        <td><span class="badge bg-secondary"><?= number_format($application['min_gpa'] ?? 0.00, 2) ?></span></td>
+                    </tr>
+                    <tr>
+                        <th>Required Min ĐRL:</th>
+                        <td><span class="badge bg-secondary"><?= e($application['min_training_score'] ?? 0) ?> pts</span></td>
                     </tr>
                     <tr>
                         <th>Current Status:</th>
