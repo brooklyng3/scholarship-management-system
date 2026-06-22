@@ -65,7 +65,11 @@ require_once __DIR__ . '/../partials/header.php';
                 <?php if ($existingReview): ?>
                     <div class="mb-4 text-center p-3 bg-light rounded border">
                         <span class="text-muted d-block small text-uppercase font-weight-bold">Total Weighted Evaluation Score</span>
-                        <h2 class="text-success font-weight-bold my-1"><?= number_format($existingReview['score'], 2) ?> <span class="fs-5 text-muted">/ 100</span></h2>
+                        <?php if (isset($existingReview['id']) && $existingReview['id'] === 0): ?>
+                            <h2 class="text-secondary font-weight-bold my-1">N/A</h2>
+                        <?php else: ?>
+                            <h2 class="text-success font-weight-bold my-1"><?= number_format($existingReview['score'], 2) ?> <span class="fs-5 text-muted">/ 100</span></h2>
+                        <?php endif; ?>
                     </div>
                     
                     <div class="mb-3">
