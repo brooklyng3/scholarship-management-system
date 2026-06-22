@@ -28,7 +28,7 @@ $canManage = is_logged_in() && in_array($currentUser['role'], ['admin', 'reviewe
             $rows = [
                 ['label' => 'Student Code:', 'value' => $profile['student_code']],
                 ['label' => 'Full Name:', 'value' => $profile['full_name']],
-                ['label' => 'Email:', 'value' => $profile['email']], // Now exists thanks to the Model fix
+                ['label' => 'Email:', 'value' => $profile['email']], 
                 ['label' => 'Major:', 'value' => $profile['major'] ?: '—'],
             ];
 
@@ -48,10 +48,17 @@ $canManage = is_logged_in() && in_array($currentUser['role'], ['admin', 'reviewe
             $escape = false;
             include __DIR__ . '/../partials/components/detail_row.php';
 
-            // Remaining static rows
+            // Remaining data rows
             $label = 'Accumulated Credits:'; $value = $profile['accumulated_credits'] ?: '—'; $escape = true; include __DIR__ . '/../partials/components/detail_row.php';
             $label = 'Conduct Score:'; $value = $profile['conduct_score'] ?: '—'; include __DIR__ . '/../partials/components/detail_row.php';
-            $label = 'Last Updated:'; $value = $profile['updated_at'] ?: '—'; include __DIR__ . '/../partials/components/detail_row.php';
+            
+            // EXPOSED: New dynamic column for Module 3 Threshold Valuations
+            $label = 'Training Score (Điểm rèn luyện):'; 
+            $value = isset($profile['training_score']) ? '<strong>' . e($profile['training_score']) . '</strong> / 100' : '—'; 
+            $escape = false; 
+            include __DIR__ . '/../partials/components/detail_row.php';
+
+            $label = 'Last Updated:'; $value = $profile['updated_at'] ?: '—'; $escape = true; include __DIR__ . '/../partials/components/detail_row.php';
             ?>
         </div>
     </div>
@@ -90,12 +97,13 @@ $canManage = is_logged_in() && in_array($currentUser['role'], ['admin', 'reviewe
                             <th class="text-center">GPA</th>
                             <th class="text-center">Credits</th>
                             <th class="text-center">Conduct</th>
+                            <th class="text-center">Training Score</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                     <?php if (empty($profiles)): ?>
-                        <tr><td colspan="9" class="text-center text-muted py-4">No student profiles found.</td></tr>
+                        <tr><td colspan="10" class="text-center text-muted py-4">No student profiles found.</td></tr>
                     <?php else: ?>
                         <?php foreach ($profiles as $p): ?>
                         <tr>
@@ -113,6 +121,12 @@ $canManage = is_logged_in() && in_array($currentUser['role'], ['admin', 'reviewe
                             </td>
                             <td class="text-center"><?= e($p['accumulated_credits']) ?></td>
                             <td class="text-center"><?= e($p['conduct_score']) ?></td>
+                            
+                            <!-- EXPOSED: Table display row for administrative auditing passes -->
+                            <td class="text-center font-weight-bold text-primary">
+                                <strong><?= e($p['training_score'] ?? '—') ?></strong>
+                            </td>
+                            
                             <td class="text-center">
                                 <?php if ($canManage): ?>
                                     <a href="<?= e(url('student_profiles', 'edit', ['id' => $p['id']])) ?>" class="btn btn-sm btn-outline-primary">Edit</a>

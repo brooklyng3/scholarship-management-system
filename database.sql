@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 22, 2026 at 12:32 AM
+-- Generation Time: Jun 22, 2026 at 09:39 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -58,7 +58,95 @@ INSERT INTO `applications` (`id`, `user_id`, `tier_id`, `profile_id`, `reviewer_
 (14, 8, 4, 3, 3, '', '2026-06-04 21:07:08'),
 (15, 6, 5, 1, 3, '', '2026-06-04 21:07:08'),
 (16, 8, 6, 3, 3, 'pending', '2026-06-21 20:31:39'),
-(17, 8, 7, 3, 3, 'pending', '2026-06-21 20:53:44');
+(17, 8, 7, 3, 3, 'pending', '2026-06-21 20:53:44'),
+(18, 16, 1, 11, 3, 'reviewing', '2026-04-21 03:05:17'),
+(19, 6, 6, 1, 3, 'rejected', '2026-04-07 14:37:16'),
+(20, 11, 5, 6, 3, 'reviewing', '2026-05-09 13:54:21'),
+(21, 20, 6, 15, 3, 'rejected', '2026-05-25 12:05:59'),
+(23, 16, 2, 11, 3, 'rejected', '2026-04-24 14:28:33'),
+(24, 18, 1, 13, 3, 'pending', '2026-06-05 02:40:45'),
+(25, 11, 1, 6, 3, 'reviewing', '2026-06-03 02:55:14'),
+(26, 12, 5, 7, 3, 'reviewing', '2026-04-03 11:32:03'),
+(27, 9, 2, 4, 3, 'pending', '2026-04-12 02:52:42'),
+(28, 14, 5, 9, 3, 'rejected', '2026-04-01 03:41:57'),
+(29, 9, 4, 4, 3, 'reviewing', '2026-03-27 03:20:50'),
+(30, 9, 5, 4, 3, 'pending', '2026-05-14 01:11:01'),
+(31, 6, 4, 1, 3, 'reviewing', '2026-05-13 02:42:34'),
+(32, 20, 3, 15, 3, 'pending', '2026-04-27 03:29:09'),
+(33, 15, 7, 10, 3, 'reviewing', '2026-04-06 13:59:25'),
+(34, 20, 7, 15, 3, 'rejected', '2026-06-09 14:18:08'),
+(35, 13, 2, 8, 3, 'approved', '2026-05-26 14:06:44'),
+(36, 15, 3, 10, 3, 'pending', '2026-03-27 14:28:57'),
+(37, 6, 2, 1, 3, 'reviewing', '2026-04-28 02:37:35'),
+(38, 13, 4, 8, 3, 'pending', '2026-05-12 14:53:40'),
+(39, 11, 7, 6, 3, 'approved', '2026-04-23 02:20:36'),
+(40, 14, 4, 9, 3, 'rejected', '2026-04-19 14:24:23'),
+(41, 16, 7, 11, 3, 'pending', '2026-04-30 13:06:06'),
+(42, 17, 6, 12, 3, 'reviewing', '2026-04-14 22:47:45'),
+(43, 17, 3, 12, 3, 'rejected', '2026-04-26 02:30:59'),
+(44, 11, 6, 6, 3, 'reviewing', '2026-03-24 13:44:22'),
+(45, 12, 6, 7, 3, 'pending', '2026-03-25 02:51:04'),
+(46, 10, 5, 5, 3, 'reviewing', '2026-05-23 00:14:36'),
+(47, 19, 4, 14, 3, 'approved', '2026-04-13 02:29:25'),
+(48, 10, 6, 5, 3, 'reviewing', '2026-05-21 03:57:45'),
+(49, 11, 2, 6, 3, 'approved', '2026-05-08 13:41:43'),
+(50, 15, 1, 10, 3, 'pending', '2026-06-22 03:46:05'),
+(51, 13, 7, 8, 3, 'reviewing', '2026-05-10 15:02:17'),
+(52, 12, 4, 7, 3, 'rejected', '2026-04-15 02:21:40'),
+(53, 17, 5, 12, 3, 'approved', '2026-05-20 13:29:52'),
+(54, 13, 6, 8, 3, 'pending', '2026-06-02 02:39:38'),
+(55, 18, 7, 13, 3, 'rejected', '2026-04-06 13:12:49'),
+(56, 10, 1, 5, 3, 'approved', '2026-04-12 14:32:31'),
+(57, 8, 2, 3, 3, 'pending', '2026-05-08 03:56:31'),
+(58, 8, 3, 3, 3, 'rejected', '2026-04-21 02:01:28'),
+(59, 12, 7, 7, 3, 'rejected', '2026-05-14 21:55:33'),
+(60, 18, 2, 13, 3, 'reviewing', '2026-04-15 03:10:20'),
+(61, 12, 1, 7, 3, 'approved', '2026-04-12 03:11:21'),
+(62, 20, 5, 15, 3, 'pending', '2026-04-22 11:13:22'),
+(63, 7, 2, 2, 3, 'reviewing', '2026-04-11 02:17:35'),
+(64, 15, 6, 10, 3, 'reviewing', '2026-04-16 03:00:27'),
+(65, 19, 3, 14, 3, 'approved', '2026-04-03 02:35:23'),
+(66, 19, 5, 14, 3, 'rejected', '2026-04-14 13:23:09'),
+(67, 11, 3, 6, 3, 'reviewing', '2026-04-16 03:24:48'),
+(68, 18, 4, 13, 3, 'rejected', '2026-06-08 23:13:34'),
+(69, 14, 7, 9, 3, 'reviewing', '2026-05-13 14:51:35'),
+(70, 17, 4, 12, 3, 'rejected', '2026-06-06 13:54:47'),
+(71, 13, 3, 8, 3, 'reviewing', '2026-06-16 13:16:24'),
+(72, 19, 6, 14, 3, 'pending', '2026-05-21 02:52:53'),
+(73, 16, 5, 11, 3, 'rejected', '2026-04-10 02:22:06'),
+(74, 14, 2, 9, 3, 'pending', '2026-04-26 07:08:55'),
+(75, 6, 3, 1, 3, 'rejected', '2026-03-31 03:19:19'),
+(76, 19, 1, 14, 3, 'pending', '2026-06-05 13:38:23'),
+(77, 15, 5, 10, 3, 'reviewing', '2026-06-06 03:53:30'),
+(78, 13, 5, 8, 3, 'reviewing', '2026-06-04 14:50:34'),
+(79, 20, 4, 15, 3, 'pending', '2026-05-06 17:09:02'),
+(80, 14, 6, 9, 3, 'reviewing', '2026-04-19 02:26:34'),
+(81, 18, 6, 13, 3, 'approved', '2026-04-17 02:26:13'),
+(82, 17, 2, 12, 3, 'reviewing', '2026-04-19 14:01:29'),
+(83, 7, 5, 2, 3, 'approved', '2026-04-06 02:05:52'),
+(84, 16, 4, 11, 3, 'rejected', '2026-05-01 13:11:21'),
+(85, 6, 7, 1, 3, 'rejected', '2026-06-12 04:35:28'),
+(86, 20, 1, 15, 3, 'rejected', '2026-03-26 21:22:26'),
+(87, 18, 5, 13, 3, 'approved', '2026-06-05 02:36:16'),
+(88, 14, 1, 9, 3, 'pending', '2026-05-24 03:03:34'),
+(89, 16, 3, 11, 3, 'approved', '2026-03-26 13:07:14'),
+(90, 19, 7, 14, 3, 'approved', '2026-06-18 14:15:16'),
+(91, 10, 4, 5, 3, 'rejected', '2026-06-02 02:06:49'),
+(92, 10, 7, 5, 3, 'approved', '2026-05-28 02:05:17'),
+(93, 16, 6, 11, 3, 'reviewing', '2026-03-26 13:47:07'),
+(94, 9, 1, 4, 3, 'reviewing', '2026-04-11 03:00:58'),
+(95, 9, 3, 4, 3, 'reviewing', '2026-06-12 05:14:30'),
+(96, 7, 4, 2, 3, 'approved', '2026-05-21 13:25:09'),
+(97, 12, 3, 7, 3, 'rejected', '2026-03-27 13:17:51'),
+(98, 15, 4, 10, 3, 'rejected', '2026-06-12 14:20:53'),
+(99, 9, 6, 4, 3, 'pending', '2026-04-08 03:38:12'),
+(100, 7, 6, 2, 3, 'approved', '2026-04-03 13:25:03'),
+(101, 8, 5, 3, 3, 'approved', '2026-05-13 14:39:43'),
+(102, 17, 7, 12, 3, 'rejected', '2026-05-10 03:59:01'),
+(103, 9, 7, 4, 3, 'pending', '2026-05-21 03:19:46'),
+(104, 7, 7, 2, 3, 'rejected', '2026-06-04 03:00:07'),
+(105, 7, 1, 2, 3, 'rejected', '2026-06-14 14:28:35'),
+(106, 10, 2, 5, 3, 'reviewing', '2026-03-24 13:37:16');
 
 -- --------------------------------------------------------
 
@@ -92,6 +180,21 @@ INSERT INTO `application_documents` (`id`, `application_id`, `document_type`, `f
 (11, 14, 'ctf_certificate', '/uploads/docs/ctf_sv003.pdf', '2026-06-04 21:07:09'),
 (12, 15, 'security_plus', '/uploads/docs/sec_sv001.pdf', '2026-06-04 21:07:09'),
 (15, 17, 'proof', 'uploads/docs/app_17_1782075224_5b7b8b15c8347b12.jpg', '2026-06-21 20:53:44');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `application_reviews`
+--
+
+CREATE TABLE `application_reviews` (
+  `id` int(11) NOT NULL,
+  `application_id` int(11) NOT NULL,
+  `reviewer_id` int(11) NOT NULL,
+  `score` decimal(5,2) NOT NULL,
+  `comment` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
 
@@ -146,7 +249,24 @@ INSERT INTO `disbursements` (`id`, `decision_id`, `amount_paid`, `payment_method
 (4, 4, 15000000.00, 'bank_transfer', 'processing', NULL),
 (5, 5, 10000000.00, 'bank_transfer', 'processing', NULL),
 (6, 8, 25000000.00, 'cash', 'completed', '2026-06-25'),
-(7, 9, 15000000.00, 'cash', 'completed', '2026-06-25');
+(7, 9, 15000000.00, 'cash', 'completed', '2026-06-25'),
+(8, 10, 17096122.00, NULL, 'completed', '2026-06-12'),
+(9, 11, 12738484.00, NULL, 'completed', '2026-05-13'),
+(10, 12, 17516396.00, NULL, 'completed', '2026-04-26'),
+(11, 13, 5676949.00, NULL, 'completed', '2026-05-25'),
+(12, 14, 13170325.00, NULL, 'completed', '2026-06-01'),
+(13, 15, 7747295.00, NULL, 'completed', '2026-05-02'),
+(14, 16, 12043030.00, NULL, 'completed', '2026-04-26'),
+(15, 17, 12682088.00, NULL, 'completed', '2026-04-18'),
+(16, 18, 17737304.00, NULL, 'completed', '2026-05-01'),
+(17, 19, 7574493.00, NULL, 'completed', '2026-04-27'),
+(18, 20, 8184621.00, NULL, 'completed', '2026-06-28'),
+(19, 21, 19371191.00, NULL, 'completed', '2026-04-16'),
+(20, 22, 14563538.00, NULL, 'completed', '2026-07-03'),
+(21, 23, 5713880.00, NULL, 'completed', '2026-06-07'),
+(22, 24, 6430672.00, NULL, 'completed', '2026-06-11'),
+(23, 25, 13833406.00, NULL, 'completed', '2026-04-14'),
+(24, 26, 5198837.00, NULL, 'completed', '2026-05-30');
 
 -- --------------------------------------------------------
 
@@ -235,7 +355,24 @@ INSERT INTO `scholarship_decisions` (`id`, `application_id`, `final_status`, `gr
 (6, 6, 'waitlisted', NULL, '2026-06-15'),
 (7, 10, 'rejected', NULL, '2026-06-15'),
 (8, 14, 'approved', 25000000.00, '2026-06-20'),
-(9, 15, 'approved', 15000000.00, '2026-06-20');
+(9, 15, 'approved', 15000000.00, '2026-06-20'),
+(10, 35, 'approved', 17096122.00, '2026-06-04'),
+(11, 39, 'approved', 12738484.00, '2026-04-30'),
+(12, 47, 'approved', 17516396.00, '2026-04-19'),
+(13, 49, 'approved', 5676949.00, '2026-05-17'),
+(14, 53, 'approved', 13170325.00, '2026-05-26'),
+(15, 56, 'approved', 7747295.00, '2026-04-21'),
+(16, 61, 'approved', 12043030.00, '2026-04-18'),
+(17, 65, 'approved', 12682088.00, '2026-04-11'),
+(18, 81, 'approved', 17737304.00, '2026-04-24'),
+(19, 83, 'approved', 7574493.00, '2026-04-13'),
+(20, 87, 'approved', 8184621.00, '2026-06-15'),
+(21, 89, 'approved', 19371191.00, '2026-04-02'),
+(22, 90, 'approved', 14563538.00, '2026-06-22'),
+(23, 92, 'approved', 5713880.00, '2026-05-31'),
+(24, 96, 'approved', 6430672.00, '2026-05-31'),
+(25, 100, 'approved', 13833406.00, '2026-04-09'),
+(26, 101, 'approved', 5198837.00, '2026-05-16');
 
 -- --------------------------------------------------------
 
@@ -249,18 +386,20 @@ CREATE TABLE `scholarship_programs` (
   `scholarship_type` enum('internal_academic','corporate_sponsor','social_support') NOT NULL,
   `start_date` date DEFAULT NULL,
   `end_date` date DEFAULT NULL,
-  `status` enum('active','closed','draft') DEFAULT 'draft'
+  `status` enum('active','closed','draft') DEFAULT 'draft',
+  `min_gpa` decimal(3,2) DEFAULT 0.00,
+  `min_training_score` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `scholarship_programs`
 --
 
-INSERT INTO `scholarship_programs` (`id`, `title`, `scholarship_type`, `start_date`, `end_date`, `status`) VALUES
-(1, 'Học bổng Khuyến khích Học tập Kỳ Thu 2026', 'internal_academic', '2026-06-01', '2026-06-30', 'active'),
-(2, 'Học bổng Tài năng Viettel Cyber Security', 'corporate_sponsor', '2026-05-15', '2026-06-15', 'active'),
-(3, 'Hỗ trợ Sinh viên Vượt khó 2026', 'social_support', '2026-07-01', '2026-07-31', 'draft'),
-(4, 'Học bổng Nghiên cứu Khoa học Trẻ', 'internal_academic', '2026-08-01', '2026-08-30', 'draft');
+INSERT INTO `scholarship_programs` (`id`, `title`, `scholarship_type`, `start_date`, `end_date`, `status`, `min_gpa`, `min_training_score`) VALUES
+(1, 'Học bổng Khuyến khích Học tập Kỳ Thu 2026', 'internal_academic', '2026-06-01', '2026-06-30', 'active', 3.20, 75),
+(2, 'Học bổng Tài năng Viettel Cyber Security', 'corporate_sponsor', '2026-05-15', '2026-06-15', 'active', 3.20, 75),
+(3, 'Hỗ trợ Sinh viên Vượt khó 2026', 'social_support', '2026-07-01', '2026-07-31', 'draft', 2.50, 65),
+(4, 'Học bổng Nghiên cứu Khoa học Trẻ', 'internal_academic', '2026-08-01', '2026-08-30', 'draft', 2.50, 65);
 
 -- --------------------------------------------------------
 
@@ -357,29 +496,30 @@ CREATE TABLE `student_profiles` (
   `current_gpa` decimal(3,2) DEFAULT NULL,
   `accumulated_credits` int(11) DEFAULT NULL,
   `conduct_score` int(11) DEFAULT NULL,
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `training_score` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `student_profiles`
 --
 
-INSERT INTO `student_profiles` (`id`, `user_id`, `gpa`, `year_level`, `student_code`, `full_name`, `major`, `current_gpa`, `accumulated_credits`, `conduct_score`, `updated_at`) VALUES
-(1, 6, NULL, NULL, 'SV2026001', 'Nguyễn Văn Một', 'Information Technology', 3.85, 95, 90, '2026-06-04 21:07:08'),
-(2, 7, NULL, NULL, 'SV2026002', 'Trần Thị Hai', 'Computer Science', 3.20, 80, 85, '2026-06-04 21:07:08'),
-(3, 8, NULL, NULL, 'SV2026003', 'Lê Văn Ba', 'Information Systems', 3.90, 110, 95, '2026-06-04 21:07:08'),
-(4, 9, NULL, NULL, 'SV2026004', 'Phạm Thị Bốn', 'Software Engineering', 2.80, 70, 75, '2026-06-04 21:07:08'),
-(5, 10, NULL, NULL, 'SV2026005', 'Hoàng Văn Năm', 'Data Science', 3.55, 85, 88, '2026-06-04 21:07:08'),
-(6, 11, NULL, NULL, 'SV2026006', 'Vũ Thị Sáu', 'Cyber Security', 3.10, 75, 80, '2026-06-04 21:07:08'),
-(7, 12, NULL, NULL, 'SV2026007', 'Đặng Văn Bảy', 'Information Technology', 3.75, 100, 92, '2026-06-04 21:07:08'),
-(8, 13, NULL, NULL, 'SV2026008', 'Bùi Thị Tám', 'Computer Science', 3.95, 115, 98, '2026-06-04 21:07:08'),
-(9, 14, NULL, NULL, 'SV2026009', 'Đỗ Văn Chín', 'Software Engineering', 3.40, 90, 85, '2026-06-04 21:07:08'),
-(10, 15, NULL, NULL, 'SV2026010', 'Hồ Thị Mười', 'Data Science', 3.65, 95, 90, '2026-06-04 21:07:08'),
-(11, 16, NULL, NULL, 'SV2026011', 'Ngô Văn Mười Một', 'Information Systems', 2.50, 60, 70, '2026-06-04 21:07:08'),
-(12, 17, NULL, NULL, 'SV2026012', 'Dương Thị Mười Hai', 'Cyber Security', 3.88, 105, 94, '2026-06-04 21:07:08'),
-(13, 18, NULL, NULL, 'SV2026013', 'Lý Văn Mười Ba', 'Information Technology', 3.35, 85, 82, '2026-06-04 21:07:08'),
-(14, 19, NULL, NULL, 'SV2026014', 'Mai Thị Mười Bốn', 'Computer Science', 3.70, 98, 91, '2026-06-04 21:07:08'),
-(15, 20, NULL, NULL, 'SV2026015', 'Trịnh Văn Mười Lăm', 'Software Engineering', 3.60, 92, 88, '2026-06-04 21:07:08');
+INSERT INTO `student_profiles` (`id`, `user_id`, `gpa`, `year_level`, `student_code`, `full_name`, `major`, `current_gpa`, `accumulated_credits`, `conduct_score`, `updated_at`, `training_score`) VALUES
+(1, 6, NULL, NULL, 'SV2026001', 'Nguyễn Văn Một', 'Information Technology', 3.85, 95, 90, '2026-06-22 07:38:40', 71),
+(2, 7, NULL, NULL, 'SV2026002', 'Trần Thị Hai', 'Computer Science', 3.20, 80, 85, '2026-06-22 07:38:40', 94),
+(3, 8, NULL, NULL, 'SV2026003', 'Lê Văn Ba', 'Information Systems', 3.90, 110, 95, '2026-06-22 07:38:40', 88),
+(4, 9, NULL, NULL, 'SV2026004', 'Phạm Thị Bốn', 'Software Engineering', 2.80, 70, 75, '2026-06-22 07:38:40', 71),
+(5, 10, NULL, NULL, 'SV2026005', 'Hoàng Văn Năm', 'Data Science', 3.55, 85, 88, '2026-06-22 07:38:40', 94),
+(6, 11, NULL, NULL, 'SV2026006', 'Vũ Thị Sáu', 'Cyber Security', 3.10, 75, 80, '2026-06-22 07:38:40', 88),
+(7, 12, NULL, NULL, 'SV2026007', 'Đặng Văn Bảy', 'Information Technology', 3.75, 100, 92, '2026-06-22 07:38:40', 71),
+(8, 13, NULL, NULL, 'SV2026008', 'Bùi Thị Tám', 'Computer Science', 3.95, 115, 98, '2026-06-22 07:38:40', 94),
+(9, 14, NULL, NULL, 'SV2026009', 'Đỗ Văn Chín', 'Software Engineering', 3.40, 90, 85, '2026-06-22 07:38:40', 88),
+(10, 15, NULL, NULL, 'SV2026010', 'Hồ Thị Mười', 'Data Science', 3.65, 95, 90, '2026-06-22 07:38:40', 71),
+(11, 16, NULL, NULL, 'SV2026011', 'Ngô Văn Mười Một', 'Information Systems', 2.50, 60, 70, '2026-06-22 07:38:40', 94),
+(12, 17, NULL, NULL, 'SV2026012', 'Dương Thị Mười Hai', 'Cyber Security', 3.88, 105, 94, '2026-06-22 07:38:40', 88),
+(13, 18, NULL, NULL, 'SV2026013', 'Lý Văn Mười Ba', 'Information Technology', 3.35, 85, 82, '2026-06-22 07:38:40', 71),
+(14, 19, NULL, NULL, 'SV2026014', 'Mai Thị Mười Bốn', 'Computer Science', 3.70, 98, 91, '2026-06-22 07:38:40', 94),
+(15, 20, NULL, NULL, 'SV2026015', 'Trịnh Văn Mười Lăm', 'Software Engineering', 3.60, 92, 88, '2026-06-22 07:38:40', 88);
 
 -- --------------------------------------------------------
 
@@ -466,6 +606,14 @@ ALTER TABLE `applications`
 ALTER TABLE `application_documents`
   ADD PRIMARY KEY (`id`),
   ADD KEY `application_id` (`application_id`);
+
+--
+-- Indexes for table `application_reviews`
+--
+ALTER TABLE `application_reviews`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_app_review` (`application_id`),
+  ADD KEY `reviewer_id` (`reviewer_id`);
 
 --
 -- Indexes for table `award_certificates`
@@ -562,13 +710,19 @@ ALTER TABLE `violation_records`
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 
 --
 -- AUTO_INCREMENT for table `application_documents`
 --
 ALTER TABLE `application_documents`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+
+--
+-- AUTO_INCREMENT for table `application_reviews`
+--
+ALTER TABLE `application_reviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `award_certificates`
@@ -580,7 +734,7 @@ ALTER TABLE `award_certificates`
 -- AUTO_INCREMENT for table `disbursements`
 --
 ALTER TABLE `disbursements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT for table `eligibility_rules`
@@ -598,7 +752,7 @@ ALTER TABLE `evaluation_scores`
 -- AUTO_INCREMENT for table `scholarship_decisions`
 --
 ALTER TABLE `scholarship_decisions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT for table `scholarship_programs`
@@ -660,6 +814,13 @@ ALTER TABLE `applications`
 --
 ALTER TABLE `application_documents`
   ADD CONSTRAINT `application_documents_ibfk_1` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `application_reviews`
+--
+ALTER TABLE `application_reviews`
+  ADD CONSTRAINT `application_reviews_ibfk_1` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `application_reviews_ibfk_2` FOREIGN KEY (`reviewer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `award_certificates`
