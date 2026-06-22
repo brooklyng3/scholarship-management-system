@@ -42,13 +42,14 @@ $isStudent = ($currentUser['role'] === 'student');
                     <option value="">-- Select Student --</option>
                     <?php foreach ($students as $student): ?>
                         <option value="<?= htmlspecialchars($student['id']) ?>" 
-                                <?= (isset($old['user_id']) && $old['user_id'] == $student['id']) ? 'selected' : '' ?>>
+                                <?= (isset($old['user_id']) && $old['user_id'] == $student['id']) ? 'selected' : '' ?>
+                                <?= ($isStudent && $student['id'] == $currentUser['id']) ? 'selected' : '' ?>>
                             <?= htmlspecialchars($student['full_name']) ?> (<?= htmlspecialchars($student['email']) ?>)
                         </option>
                     <?php endforeach; ?>
                 </select>
                 <?php if ($isStudent): ?>
-                    <input type="hidden" name="user_id" value="<?= $currentUser['id'] ?>">
+                    <input type="hidden" name="user_id" value="<?= htmlspecialchars($currentUser['id']) ?>">
                 <?php endif; ?>
             </div>
 
@@ -70,9 +71,11 @@ $isStudent = ($currentUser['role'] === 'student');
             </div>
 
             <div class="mb-3">
-                <label for="proof_document" class="form-label">Supporting Document <span class="text-danger">*</span></label>
-                <input type="file" name="proof_document" id="proof_document" class="form-control" accept=".pdf,.jpg,.png" required>
-                <div class="form-text">Upload supporting document (PDF, JPG, PNG, max 5MB)</div>
+                <label for="proof_documents" class="form-label">Supporting Documents <span class="text-danger">*</span></label>
+                <input type="file" name="file_selector" id="file_selector" class="form-control" accept=".pdf,.jpg,.png,.jpeg" multiple>
+                <div class="form-text">Upload one or more supporting documents (PDF, JPG, PNG, max 5MB each)</div>
+                <div id="fileList" class="mt-2"></div>
+                <input type="hidden" name="has_files" id="has_files" value="0">
             </div>
 
             <div class="d-flex gap-2 mt-4">
@@ -84,10 +87,113 @@ $isStudent = ($currentUser['role'] === 'student');
 </div>
 
 <script>
-document.getElementById('applicationForm').addEventListener('submit', function(e) {
+const fileSelector = document.getElementById('file_selector');
+const fileListDiv = document.getElementById('fileList');
+const applicationForm = document.getElementById('applicationForm');
+const hasFilesInput = document.getElementById('has_files');
+
+// Store selected files in a DataTransfer object to maintain the list
+let selectedFiles = new DataTransfer();
+
+// Handle file selection
+fileSelector.addEventListener('change', function() {
+    const newFiles = Array.from(this.files);
+    
+    // Validate and add each file
+    newFiles.forEach(file => {
+        // Check if file already exists
+        const exists = Array.from(selectedFiles.files).some(f => 
+            f.name === file.name && f.size === file.size
+        );
+        
+        if (!exists) {
+            // Validate file
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
+            const fileExtension = file.name.split('.').pop().toLowerCase();
+            
+            if (file.size > maxSize) {
+                alert('File "' + file.name + '" exceeds 5MB limit.');
+                return;
+            }
+            
+            if (!allowedExtensions.includes(fileExtension)) {
+                alert('File "' + file.name + '" has invalid extension. Only PDF, JPG, and PNG files are allowed.');
+                return;
+            }
+            
+            // Add file to the DataTransfer object
+            selectedFiles.items.add(file);
+        }
+    });
+    
+    // Update the display
+    updateFileList();
+    
+    // Clear the file input so the same file can be added again if removed
+    this.value = '';
+});
+
+function updateFileList() {
+    fileListDiv.innerHTML = '';
+    
+    if (selectedFiles.files.length > 0) {
+        hasFilesInput.value = '1';
+        const ul = document.createElement('ul');
+        ul.className = 'list-group';
+        
+        Array.from(selectedFiles.files).forEach((file, index) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            
+            const fileInfo = document.createElement('span');
+            fileInfo.textContent = file.name;
+            
+            const rightSide = document.createElement('div');
+            rightSide.className = 'd-flex align-items-center gap-2';
+            
+            const badge = document.createElement('span');
+            badge.className = 'badge bg-primary rounded-pill';
+            badge.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+            
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn-sm btn-danger';
+            removeBtn.innerHTML = '&times;';
+            removeBtn.onclick = () => removeFile(index);
+            
+            rightSide.appendChild(badge);
+            rightSide.appendChild(removeBtn);
+            
+            li.appendChild(fileInfo);
+            li.appendChild(rightSide);
+            ul.appendChild(li);
+        });
+        
+        fileListDiv.appendChild(ul);
+    } else {
+        hasFilesInput.value = '0';
+    }
+}
+
+function removeFile(index) {
+    // Create a new DataTransfer to rebuild the file list without the removed file
+    const newFileList = new DataTransfer();
+    
+    Array.from(selectedFiles.files).forEach((file, i) => {
+        if (i !== index) {
+            newFileList.items.add(file);
+        }
+    });
+    
+    selectedFiles = newFileList;
+    updateFileList();
+}
+
+// Before form submission, attach the files to a hidden file input
+applicationForm.addEventListener('submit', function(e) {
     const userId = document.getElementById('user_id').value;
     const programId = document.getElementById('program_id').value;
-    const fileInput = document.getElementById('proof_document');
     
     if (!userId || !programId) {
         e.preventDefault();
@@ -95,28 +201,21 @@ document.getElementById('applicationForm').addEventListener('submit', function(e
         return false;
     }
     
-    if (!fileInput.files.length) {
+    if (selectedFiles.files.length === 0) {
         e.preventDefault();
-        alert('Please upload a supporting document.');
+        alert('Please upload at least one supporting document.');
         return false;
     }
     
-    const file = fileInput.files[0];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
-    const fileExtension = file.name.split('.').pop().toLowerCase();
+    // Create a hidden file input with all selected files
+    const hiddenFileInput = document.createElement('input');
+    hiddenFileInput.type = 'file';
+    hiddenFileInput.name = 'proof_documents[]';
+    hiddenFileInput.multiple = true;
+    hiddenFileInput.style.display = 'none';
+    hiddenFileInput.files = selectedFiles.files;
     
-    if (file.size > maxSize) {
-        e.preventDefault();
-        alert('File size must be less than 5MB.');
-        return false;
-    }
-    
-    if (!allowedExtensions.includes(fileExtension)) {
-        e.preventDefault();
-        alert('Only PDF, JPG, and PNG files are allowed.');
-        return false;
-    }
+    this.appendChild(hiddenFileInput);
     
     return true;
 });

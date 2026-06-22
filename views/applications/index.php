@@ -2,9 +2,24 @@
 /**
  * @var array $applications
  * @var array $currentUser
+ * @var int $page Current page number
+ * @var int $totalPages Total number of pages
+ * @var int $totalCount Total number of records
+ * @var array $programs List of programs for filter
+ * @var string $search Current search term
+ * @var string $statusFilter Current status filter
+ * @var int $programFilter Current program filter
  */
 $pageTitle = 'Scholarship Applications';
 require_once __DIR__ . '/../partials/header.php';
+
+// Default values if not set
+$page = $page ?? 1;
+$totalPages = $totalPages ?? 1;
+$totalCount = $totalCount ?? 0;
+$search = $search ?? '';
+$statusFilter = $statusFilter ?? '';
+$programFilter = $programFilter ?? 0;
 ?>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -15,24 +30,79 @@ require_once __DIR__ . '/../partials/header.php';
     <?php endif; ?>
 </div>
 
+<!-- Search and Filter Section -->
+<div class="card shadow-sm border-0 mb-3">
+    <div class="card-body">
+        <form method="GET" action="index.php" class="row g-3">
+            <input type="hidden" name="controller" value="applications">
+            <input type="hidden" name="action" value="index">
+            
+            <div class="col-md-4">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="search" 
+                       name="search" 
+                       placeholder="Search by student name or program..."
+                       value="<?= htmlspecialchars($search) ?>">
+            </div>
+            
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">All Statuses</option>
+                    <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Pending</option>
+                    <option value="reviewing" <?= $statusFilter === 'reviewing' ? 'selected' : '' ?>>Reviewing</option>
+                    <option value="approved" <?= $statusFilter === 'approved' ? 'selected' : '' ?>>Approved</option>
+                    <option value="rejected" <?= $statusFilter === 'rejected' ? 'selected' : '' ?>>Rejected</option>
+                    <option value="waitlisted" <?= $statusFilter === 'waitlisted' ? 'selected' : '' ?>>Waitlisted</option>
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label for="program" class="form-label">Program</label>
+                <select class="form-select" id="program" name="program">
+                    <option value="0">All Programs</option>
+                    <?php foreach ($programs as $prog): ?>
+                        <option value="<?= htmlspecialchars($prog['id']) ?>" 
+                                <?= $programFilter == $prog['id'] ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($prog['title']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Filter</button>
+            </div>
+        </form>
+        
+        <?php if (!empty($search) || !empty($statusFilter) || $programFilter > 0): ?>
+            <div class="mt-3">
+                <a href="index.php?controller=applications&action=index" class="btn btn-sm btn-outline-secondary">Clear Filters</a>
+                <span class="text-muted ms-2">Showing <?= $totalCount ?> result(s)</span>
+            </div>
+        <?php endif; ?>
+    </div>
+</div>
+
 <div class="card shadow-sm border-0">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
             <thead class="table-dark">
                 <tr>
                     <th style="width: 5%; text-align: center;">ID</th>
-                    <th style="width: 20%;">Student Name</th>
-                    <th style="width: 25%;">Scholarship Program</th> 
-                    <th style="width: 15%;">Tier Name</th>
-                    <th style="width: 10%;">Status</th>
-                    <th style="width: 15%;">Applied Date</th>
+                    <th style="width: 25%;">Student Name</th>
+                    <th style="width: 30%;">Scholarship Program</th> 
+                    <th style="width: 12%;">Status</th>
+                    <th style="width: 18%;">Applied Date</th>
                     <th style="width: 10%; text-align: center;">Actions</th>
                 </tr>
             </thead>
             <tbody>
             <?php if (empty($applications)): ?>
                 <tr>
-                    <td colspan="7" style="text-align: center; color: #999; padding: 2rem;">
+                    <td colspan="6" style="text-align: center; color: #999; padding: 2rem;">
                         No applications found.
                     </td>
                 </tr>
@@ -44,8 +114,6 @@ require_once __DIR__ . '/../partials/header.php';
                     <td><strong><?= htmlspecialchars($app['student_name']) ?></strong></td>
                     
                     <td><?= htmlspecialchars($app['program_title']) ?></td>
-                    
-                    <td><span class="text-muted"><?= htmlspecialchars($app['tier_name']) ?></span></td>
                     
                     <td>
                         <?php
@@ -105,6 +173,68 @@ require_once __DIR__ . '/../partials/header.php';
             </tbody>
         </table>
     </div>
+    
+    <!-- Pagination -->
+    <?php if ($totalPages > 1): ?>
+        <div class="card-footer bg-white">
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center mb-0">
+                    <!-- Previous Button -->
+                    <li class="page-item <?= $page <= 1 ? 'disabled' : '' ?>">
+                        <a class="page-link" 
+                           href="index.php?controller=applications&action=index&page=<?= $page - 1 ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>&program=<?= $programFilter ?>"
+                           <?= $page <= 1 ? 'tabindex="-1"' : '' ?>>
+                            Previous
+                        </a>
+                    </li>
+                    
+                    <!-- Page Numbers -->
+                    <?php
+                    $startPage = max(1, $page - 2);
+                    $endPage = min($totalPages, $page + 2);
+                    
+                    if ($startPage > 1): ?>
+                        <li class="page-item">
+                            <a class="page-link" href="index.php?controller=applications&action=index&page=1&search=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>&program=<?= $programFilter ?>">1</a>
+                        </li>
+                        <?php if ($startPage > 2): ?>
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                    
+                    <?php for ($i = $startPage; $i <= $endPage; $i++): ?>
+                        <li class="page-item <?= $i == $page ? 'active' : '' ?>">
+                            <a class="page-link" href="index.php?controller=applications&action=index&page=<?= $i ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>&program=<?= $programFilter ?>">
+                                <?= $i ?>
+                            </a>
+                        </li>
+                    <?php endfor; ?>
+                    
+                    <?php if ($endPage < $totalPages): ?>
+                        <?php if ($endPage < $totalPages - 1): ?>
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        <?php endif; ?>
+                        <li class="page-item">
+                            <a class="page-link" href="index.php?controller=applications&action=index&page=<?= $totalPages ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>&program=<?= $programFilter ?>"><?= $totalPages ?></a>
+                        </li>
+                    <?php endif; ?>
+                    
+                    <!-- Next Button -->
+                    <li class="page-item <?= $page >= $totalPages ? 'disabled' : '' ?>">
+                        <a class="page-link" 
+                           href="index.php?controller=applications&action=index&page=<?= $page + 1 ?>&search=<?= urlencode($search) ?>&status=<?= urlencode($statusFilter) ?>&program=<?= $programFilter ?>"
+                           <?= $page >= $totalPages ? 'tabindex="-1"' : '' ?>>
+                            Next
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="text-center text-muted small mt-2">
+                Showing page <?= $page ?> of <?= $totalPages ?> (<?= $totalCount ?> total records)
+            </div>
+        </div>
+    <?php endif; ?>
 </div>
 
 <script>

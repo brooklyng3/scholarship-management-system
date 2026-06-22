@@ -38,6 +38,105 @@ class ApplicationModel
     }
 
     /**
+     * Get paginated applications with optional search and filters
+     * @param int $offset Starting position
+     * @param int $limit Number of records
+     * @param string $search Search term
+     * @param string $statusFilter Status filter
+     * @param int $programFilter Program ID filter
+     * @return array
+     */
+    public function getAllPaginated(int $offset, int $limit, string $search = '', string $statusFilter = '', int $programFilter = 0): array
+    {
+        $sql = "
+            SELECT 
+                a.id,
+                a.user_id,
+                a.tier_id,
+                a.status,
+                a.applied_date,
+                u.full_name as student_name,
+                st.tier_name,
+                sp.title as program_title
+            FROM applications a
+            INNER JOIN users u ON a.user_id = u.id
+            INNER JOIN scholarship_tiers st ON a.tier_id = st.id
+            INNER JOIN scholarship_programs sp ON st.program_id = sp.id
+            WHERE 1=1
+        ";
+        
+        $params = [];
+        
+        if (!empty($search)) {
+            $sql .= " AND (u.full_name LIKE ? OR sp.title LIKE ?)";
+            $searchTerm = '%' . $search . '%';
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+        
+        if (!empty($statusFilter)) {
+            $sql .= " AND a.status = ?";
+            $params[] = $statusFilter;
+        }
+        
+        if ($programFilter > 0) {
+            $sql .= " AND sp.id = ?";
+            $params[] = $programFilter;
+        }
+        
+        $sql .= " ORDER BY a.id DESC LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Count all applications with optional filters
+     * @param string $search Search term
+     * @param string $statusFilter Status filter
+     * @param int $programFilter Program ID filter
+     * @return int
+     */
+    public function countAll(string $search = '', string $statusFilter = '', int $programFilter = 0): int
+    {
+        $sql = "
+            SELECT COUNT(*) as count
+            FROM applications a
+            INNER JOIN users u ON a.user_id = u.id
+            INNER JOIN scholarship_tiers st ON a.tier_id = st.id
+            INNER JOIN scholarship_programs sp ON st.program_id = sp.id
+            WHERE 1=1
+        ";
+        
+        $params = [];
+        
+        if (!empty($search)) {
+            $sql .= " AND (u.full_name LIKE ? OR sp.title LIKE ?)";
+            $searchTerm = '%' . $search . '%';
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+        
+        if (!empty($statusFilter)) {
+            $sql .= " AND a.status = ?";
+            $params[] = $statusFilter;
+        }
+        
+        if ($programFilter > 0) {
+            $sql .= " AND sp.id = ?";
+            $params[] = $programFilter;
+        }
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)$result['count'];
+    }
+
+    /**
      * Get a single application by ID
      * @param int $id Application ID
      * @return array|false Application data or false if not found
@@ -78,6 +177,102 @@ class ApplicationModel
         ");
         $stmt->execute([$userId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get paginated applications for a specific user with filters
+     * @param int $userId User ID
+     * @param int $offset Starting position
+     * @param int $limit Number of records
+     * @param string $search Search term
+     * @param string $statusFilter Status filter
+     * @param int $programFilter Program ID filter
+     * @return array
+     */
+    public function getByUserIdPaginated(int $userId, int $offset, int $limit, string $search = '', string $statusFilter = '', int $programFilter = 0): array
+    {
+        $sql = "
+            SELECT 
+                a.id,
+                a.user_id,
+                a.tier_id,
+                a.status,
+                a.applied_date,
+                u.full_name as student_name,
+                st.tier_name,
+                sp.title as program_title
+            FROM applications a
+            INNER JOIN users u ON a.user_id = u.id
+            INNER JOIN scholarship_tiers st ON a.tier_id = st.id
+            INNER JOIN scholarship_programs sp ON st.program_id = sp.id
+            WHERE a.user_id = ?
+        ";
+        
+        $params = [$userId];
+        
+        if (!empty($search)) {
+            $sql .= " AND sp.title LIKE ?";
+            $params[] = '%' . $search . '%';
+        }
+        
+        if (!empty($statusFilter)) {
+            $sql .= " AND a.status = ?";
+            $params[] = $statusFilter;
+        }
+        
+        if ($programFilter > 0) {
+            $sql .= " AND sp.id = ?";
+            $params[] = $programFilter;
+        }
+        
+        $sql .= " ORDER BY a.id DESC LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Count applications for a specific user with filters
+     * @param int $userId User ID
+     * @param string $search Search term
+     * @param string $statusFilter Status filter
+     * @param int $programFilter Program ID filter
+     * @return int
+     */
+    public function countByUserId(int $userId, string $search = '', string $statusFilter = '', int $programFilter = 0): int
+    {
+        $sql = "
+            SELECT COUNT(*) as count
+            FROM applications a
+            INNER JOIN scholarship_tiers st ON a.tier_id = st.id
+            INNER JOIN scholarship_programs sp ON st.program_id = sp.id
+            WHERE a.user_id = ?
+        ";
+        
+        $params = [$userId];
+        
+        if (!empty($search)) {
+            $sql .= " AND sp.title LIKE ?";
+            $params[] = '%' . $search . '%';
+        }
+        
+        if (!empty($statusFilter)) {
+            $sql .= " AND a.status = ?";
+            $params[] = $statusFilter;
+        }
+        
+        if ($programFilter > 0) {
+            $sql .= " AND sp.id = ?";
+            $params[] = $programFilter;
+        }
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)$result['count'];
     }
 
     /**
@@ -471,5 +666,106 @@ class ApplicationModel
         ");
         $stmt->execute([$reviewerId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get paginated applications for a specific reviewer with filters
+     * @param int $reviewerId Reviewer ID
+     * @param int $offset Starting position
+     * @param int $limit Number of records
+     * @param string $search Search term
+     * @param string $statusFilter Status filter
+     * @param int $programFilter Program ID filter
+     * @return array
+     */
+    public function getByReviewerIdPaginated(int $reviewerId, int $offset, int $limit, string $search = '', string $statusFilter = '', int $programFilter = 0): array
+    {
+        $sql = "
+            SELECT 
+                a.id,
+                a.user_id,
+                a.tier_id,
+                a.status,
+                a.applied_date,
+                u.full_name as student_name,
+                st.tier_name,
+                sp.title as program_title
+            FROM applications a
+            INNER JOIN users u ON a.user_id = u.id
+            INNER JOIN scholarship_tiers st ON a.tier_id = st.id
+            INNER JOIN scholarship_programs sp ON st.program_id = sp.id
+            WHERE a.reviewer_id = ?
+        ";
+        
+        $params = [$reviewerId];
+        
+        if (!empty($search)) {
+            $sql .= " AND (u.full_name LIKE ? OR sp.title LIKE ?)";
+            $searchTerm = '%' . $search . '%';
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+        
+        if (!empty($statusFilter)) {
+            $sql .= " AND a.status = ?";
+            $params[] = $statusFilter;
+        }
+        
+        if ($programFilter > 0) {
+            $sql .= " AND sp.id = ?";
+            $params[] = $programFilter;
+        }
+        
+        $sql .= " ORDER BY a.id DESC LIMIT ? OFFSET ?";
+        $params[] = $limit;
+        $params[] = $offset;
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Count applications for a specific reviewer with filters
+     * @param int $reviewerId Reviewer ID
+     * @param string $search Search term
+     * @param string $statusFilter Status filter
+     * @param int $programFilter Program ID filter
+     * @return int
+     */
+    public function countByReviewerId(int $reviewerId, string $search = '', string $statusFilter = '', int $programFilter = 0): int
+    {
+        $sql = "
+            SELECT COUNT(*) as count
+            FROM applications a
+            INNER JOIN users u ON a.user_id = u.id
+            INNER JOIN scholarship_tiers st ON a.tier_id = st.id
+            INNER JOIN scholarship_programs sp ON st.program_id = sp.id
+            WHERE a.reviewer_id = ?
+        ";
+        
+        $params = [$reviewerId];
+        
+        if (!empty($search)) {
+            $sql .= " AND (u.full_name LIKE ? OR sp.title LIKE ?)";
+            $searchTerm = '%' . $search . '%';
+            $params[] = $searchTerm;
+            $params[] = $searchTerm;
+        }
+        
+        if (!empty($statusFilter)) {
+            $sql .= " AND a.status = ?";
+            $params[] = $statusFilter;
+        }
+        
+        if ($programFilter > 0) {
+            $sql .= " AND sp.id = ?";
+            $params[] = $programFilter;
+        }
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return (int)$result['count'];
     }
 }

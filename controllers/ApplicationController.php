@@ -25,14 +25,47 @@ class ApplicationController
         
         $currentUser = current_user();
         
+        // Pagination settings
+        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
+        $perPage = 10;
+        $offset = ($page - 1) * $perPage;
+        
+        // Search and filter parameters
+        $search = isset($_GET['search']) ? trim($_GET['search']) : '';
+        $statusFilter = isset($_GET['status']) ? trim($_GET['status']) : '';
+        $programFilter = isset($_GET['program']) ? (int)$_GET['program'] : 0;
+        
+        // Get filtered applications based on role
         if ($currentUser['role'] === 'student') {
-            // RESTORED: Students can ONLY see what they submitted themselves
-            $applications = $this->model->getByUserId((int)$currentUser['id']);
+            $applications = $this->model->getByUserIdPaginated(
+                (int)$currentUser['id'], 
+                $offset, 
+                $perPage, 
+                $search, 
+                $statusFilter, 
+                $programFilter
+            );
+            $totalCount = $this->model->countByUserId((int)$currentUser['id'], $search, $statusFilter, $programFilter);
         } elseif ($currentUser['role'] === 'reviewer') {
-            $applications = $this->model->getByReviewerId((int)$currentUser['id']);
+            $applications = $this->model->getByReviewerIdPaginated(
+                (int)$currentUser['id'], 
+                $offset, 
+                $perPage, 
+                $search, 
+                $statusFilter, 
+                $programFilter
+            );
+            $totalCount = $this->model->countByReviewerId((int)$currentUser['id'], $search, $statusFilter, $programFilter);
         } else {
-            $applications = $this->model->getAll();
+            $applications = $this->model->getAllPaginated($offset, $perPage, $search, $statusFilter, $programFilter);
+            $totalCount = $this->model->countAll($search, $statusFilter, $programFilter);
         }
+        
+        // Calculate pagination
+        $totalPages = ceil($totalCount / $perPage);
+        
+        // Get all programs for filter dropdown
+        $programs = $this->model->getAllPrograms();
         
         require __DIR__ . '/../views/applications/index.php';
     }
@@ -149,26 +182,34 @@ class ApplicationController
             if ($studentGpa < $programMinGpa || $studentTraining < $programMinTraining) {
                 $errors[] = "You do not meet the minimum requirements for this program. Required: GPA {$programMinGpa}, Training Score {$programMinTraining}. Your metrics: GPA {$studentGpa}, Training Score {$studentTraining}.";
             } else {
-                // Fetch both tiers for this program
+                // Fetch tiers for this program
                 $tiers = $this->model->getTiersByProgramId($programId);
                 
-                if (count($tiers) < 2) {
-                    $errors[] = "Program tier configuration is incomplete.";
+                if (count($tiers) === 0) {
+                    $errors[] = "No tiers are configured for this program. Please contact an administrator.";
+                } elseif (count($tiers) === 1) {
+                    // Only one tier exists, assign to it
+                    $assignedTierId = (int)$tiers[0]['id'];
                 } else {
-                    // Sort to ensure Excellence Tier comes first
+                    // Multiple tiers exist - sort and assign based on qualifications
+                    // Sort to ensure Excellence Tier (highest requirements) comes first
                     usort($tiers, function($a, $b) {
                         return $b['min_gpa'] <=> $a['min_gpa']; // Descending order
                     });
 
-                    $excellenceTier = $tiers[0];
-                    $standardTier = $tiers[1];
-
-                    // Check if student qualifies for Excellence Tier
-                    if ($studentGpa >= (float)$excellenceTier['min_gpa'] && 
-                        $studentTraining >= (int)$excellenceTier['min_training_score']) {
-                        $assignedTierId = (int)$excellenceTier['id'];
-                    } else {
-                        $assignedTierId = (int)$standardTier['id'];
+                    // Find the best tier the student qualifies for
+                    $assignedTierId = null;
+                    foreach ($tiers as $tier) {
+                        if ($studentGpa >= (float)$tier['min_gpa'] && 
+                            $studentTraining >= (int)$tier['min_training_score']) {
+                            $assignedTierId = (int)$tier['id'];
+                            break;
+                        }
+                    }
+                    
+                    // If no tier matched, assign to the lowest tier (last in sorted array)
+                    if ($assignedTierId === null) {
+                        $assignedTierId = (int)$tiers[count($tiers) - 1]['id'];
                     }
                 }
             }
@@ -180,29 +221,38 @@ class ApplicationController
         }
 
         // Validate file upload
-        if (!isset($_FILES['proof_document']) || $_FILES['proof_document']['error'] === UPLOAD_ERR_NO_FILE) {
-            $errors[] = "Supporting document is required.";
-        } elseif ($_FILES['proof_document']['error'] !== UPLOAD_ERR_OK) {
-            $errors[] = "File upload failed. Please try again.";
+        if (!isset($_FILES['proof_documents']) || empty($_FILES['proof_documents']['name'][0])) {
+            $errors[] = "At least one supporting document is required.";
         } else {
-            $file = $_FILES['proof_document'];
+            // Validate each uploaded file
+            $fileCount = count($_FILES['proof_documents']['name']);
             $maxSize = 5 * 1024 * 1024; // 5MB
             $allowedExtensions = ['pdf', 'jpg', 'jpeg', 'png'];
             $allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png'];
             
-            $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            $fileMimeType = mime_content_type($file['tmp_name']);
-            
-            if ($file['size'] > $maxSize) {
-                $errors[] = "File size must be less than 5MB.";
-            }
-            
-            if (!in_array($fileExtension, $allowedExtensions, true)) {
-                $errors[] = "Only PDF, JPG, and PNG files are allowed.";
-            }
-            
-            if (!in_array($fileMimeType, $allowedMimeTypes, true)) {
-                $errors[] = "Invalid file type. Only PDF, JPG, and PNG files are allowed.";
+            for ($i = 0; $i < $fileCount; $i++) {
+                if ($_FILES['proof_documents']['error'][$i] !== UPLOAD_ERR_OK) {
+                    $errors[] = "File upload failed for file: " . htmlspecialchars($_FILES['proof_documents']['name'][$i]);
+                    continue;
+                }
+                
+                $fileSize = $_FILES['proof_documents']['size'][$i];
+                $fileTmpPath = $_FILES['proof_documents']['tmp_name'][$i];
+                $fileName = $_FILES['proof_documents']['name'][$i];
+                $fileExtension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+                $fileMimeType = mime_content_type($fileTmpPath);
+                
+                if ($fileSize > $maxSize) {
+                    $errors[] = "File '" . htmlspecialchars($fileName) . "' exceeds 5MB limit.";
+                }
+                
+                if (!in_array($fileExtension, $allowedExtensions, true)) {
+                    $errors[] = "File '" . htmlspecialchars($fileName) . "' has invalid extension. Only PDF, JPG, and PNG files are allowed.";
+                }
+                
+                if (!in_array($fileMimeType, $allowedMimeTypes, true)) {
+                    $errors[] = "File '" . htmlspecialchars($fileName) . "' has invalid type. Only PDF, JPG, and PNG files are allowed.";
+                }
             }
         }
 
@@ -238,47 +288,80 @@ class ApplicationController
             exit;
         }
 
-        // Handle file upload
-        $file = $_FILES['proof_document'];
-        $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-        $uniqueFileName = 'app_' . $applicationId . '_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . $fileExtension;
-        $uploadDir = __DIR__ . '/../public/uploads/docs/';
-        $uploadPath = $uploadDir . $uniqueFileName;
+        // Handle multiple file uploads
+        $uploadedFiles = [];
+        $fileCount = count($_FILES['proof_documents']['name']);
         
-        // Ensure upload directory exists
-        if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
-        }
-        
-        // Move uploaded file
-        if (!move_uploaded_file($file['tmp_name'], $uploadPath)) {
-            set_flash('error', 'Application created but file upload failed.');
-            header("Location: index.php?controller=applications&action=index");
-            exit;
-        }
-        
-        // Save document metadata
-        $documentData = [
-            'application_id' => $applicationId,
-            'document_type' => 'proof',
-            'file_url' => 'uploads/docs/' . $uniqueFileName
-        ];
-        
-        if (!$this->documentModel->create($documentData)) {
-            // 1. Clean up uploaded file
-            if (file_exists($uploadPath)) {
-                unlink($uploadPath);
+        for ($i = 0; $i < $fileCount; $i++) {
+            $file = [
+                'name' => $_FILES['proof_documents']['name'][$i],
+                'tmp_name' => $_FILES['proof_documents']['tmp_name'][$i],
+                'size' => $_FILES['proof_documents']['size'][$i],
+                'error' => $_FILES['proof_documents']['error'][$i]
+            ];
+            
+            $fileExtension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $uniqueFileName = 'app_' . $applicationId . '_' . time() . '_' . bin2hex(random_bytes(8)) . '.' . $fileExtension;
+            $uploadDir = __DIR__ . '/../public/uploads/docs/';
+            $uploadPath = $uploadDir . $uniqueFileName;
+            
+            // Ensure upload directory exists
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0755, true);
             }
             
-            // 2. Roll back the application record so we don't leave an orphan row
-            $this->model->delete($applicationId); 
+            // Move uploaded file
+            if (move_uploaded_file($file['tmp_name'], $uploadPath)) {
+                $uploadedFiles[] = [
+                    'file_path' => $uploadPath,
+                    'file_url' => 'uploads/docs/' . $uniqueFileName
+                ];
+            } else {
+                // Rollback on failure
+                foreach ($uploadedFiles as $uploadedFile) {
+                    if (file_exists($uploadedFile['file_path'])) {
+                        unlink($uploadedFile['file_path']);
+                    }
+                }
+                $this->model->delete($applicationId);
+                set_flash('error', 'File upload failed for: ' . htmlspecialchars($file['name']));
+                header("Location: index.php?controller=applications&action=index");
+                exit;
+            }
+        }
+        
+        // Save all document metadata
+        $allDocumentsSaved = true;
+        foreach ($uploadedFiles as $uploadedFile) {
+            $documentData = [
+                'application_id' => $applicationId,
+                'document_type' => 'proof',
+                'file_url' => $uploadedFile['file_url']
+            ];
             
-            set_flash('error', 'Application creation failed because the document metadata could not be saved.');
+            if (!$this->documentModel->create($documentData)) {
+                $allDocumentsSaved = false;
+                break;
+            }
+        }
+        
+        if (!$allDocumentsSaved) {
+            // Rollback: Clean up all uploaded files
+            foreach ($uploadedFiles as $uploadedFile) {
+                if (file_exists($uploadedFile['file_path'])) {
+                    unlink($uploadedFile['file_path']);
+                }
+            }
+            
+            // Roll back the application record
+            $this->model->delete($applicationId);
+            
+            set_flash('error', 'Application creation failed because document metadata could not be saved.');
             header("Location: index.php?controller=applications&action=index");
             exit;
         }
         
-        set_flash('success', 'Application created successfully and automatically assigned to appropriate tier.');
+        set_flash('success', 'Application created successfully with ' . count($uploadedFiles) . ' document(s) uploaded.');
         header("Location: index.php?controller=applications&action=index");
         exit;
     }
@@ -414,7 +497,7 @@ class ApplicationController
         // On validation errors, re-load views with error bounds
         if (!empty($errors)) {
             $students = $this->model->getAllStudents();
-            $tiers = $this->model->getAllTiers();
+            $tierInfo = $this->model->getTierInfoById((int)$application['tier_id']);
             $documents = $this->documentModel->getByApplicationId($id);
             require __DIR__ . '/../views/applications/edit.php';
             return;
