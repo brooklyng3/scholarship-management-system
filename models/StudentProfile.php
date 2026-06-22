@@ -75,9 +75,8 @@ class StudentProfile
 
     public function getByUserId(int $userId): array|false
     {
-        // Change $this->pdo to $this->db
         $stmt = $this->db->prepare("
-            SELECT sp.*, u.email 
+            SELECT sp.*, u.email, u.full_name 
             FROM student_profiles sp 
             INNER JOIN users u ON sp.user_id = u.id 
             WHERE sp.user_id = ?
