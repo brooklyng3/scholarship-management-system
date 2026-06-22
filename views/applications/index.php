@@ -82,10 +82,10 @@ require_once __DIR__ . '/../partials/header.php';
                                     if ($canReview):
                                     ?>
                                         <a href="index.php?controller=applications&action=review&id=<?= htmlspecialchars($app['id']) ?>" 
-                                           class="btn btn-sm btn-info text-white">Review</a>[cite: 11]
+                                           class="btn btn-sm btn-info text-white">Review</a>
                                     <?php else:
                                     ?>
-                                        <span class="badge bg-secondary p-2 small">Locked</span>[cite: 11]
+                                        <span class="badge bg-secondary p-2 small">Locked</span>
                                     <?php endif; ?>
                                 <?php endif; ?>
                                 
