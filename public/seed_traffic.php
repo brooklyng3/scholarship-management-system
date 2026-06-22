@@ -127,39 +127,33 @@ try {
     if (!empty($approvedApplications)) {
         echo "Generating financial tracking indexes (decisions & disbursements)...\n";
 
-        $pdo->exec("CREATE TABLE IF NOT EXISTS scholarship_decisions (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            application_id INT NOT NULL,
-            granted_amount DECIMAL(15,2) NOT NULL,
-            final_status VARCHAR(50) DEFAULT 'approved',
-            decision_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )");
-
-        $pdo->exec("CREATE TABLE IF NOT EXISTS disbursements (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            decision_id INT NOT NULL,
-            amount_paid DECIMAL(15,2) NOT NULL,
-            status VARCHAR(50) DEFAULT 'completed',
-            payment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )");
+        // Check which applications already have decisions to avoid duplicates
+        $existingDecisionsStmt = $pdo->query("SELECT application_id FROM scholarship_decisions");
+        $existingDecisions = $existingDecisionsStmt->fetchAll(PDO::FETCH_COLUMN);
+        $existingDecisionsSet = array_flip($existingDecisions);
 
         $insertDecisionStmt = $pdo->prepare("
             INSERT INTO scholarship_decisions 
-            (application_id, granted_amount, final_status, decision_date) 
-            VALUES (?, ?, 'approved', ?)
+            (application_id, final_status, granted_amount, decision_date) 
+            VALUES (?, 'approved', ?, ?)
         ");
 
         $insertDisbursementStmt = $pdo->prepare("
             INSERT INTO disbursements 
-            (decision_id, amount_paid, status, payment_date) 
-            VALUES (?, ?, 'completed', ?)
+            (decision_id, amount_paid, payment_method, status, payment_date) 
+            VALUES (?, ?, 'bank_transfer', 'completed', ?)
         ");
 
         $financialCount = 0;
 
         foreach ($approvedApplications as $app) {
+            // Skip if decision already exists
+            if (isset($existingDecisionsSet[$app['id']])) {
+                continue;
+            }
+
             $grantedAmount = mt_rand(5000000, 20000000);
-            $decisionDate = date('Y-m-d H:i:s', strtotime($app['date'] . ' +' . mt_rand(3, 10) . ' days'));
+            $decisionDate = date('Y-m-d', strtotime($app['date'] . ' +' . mt_rand(3, 10) . ' days'));
             
             $insertDecisionStmt->execute([
                 $app['id'],
@@ -168,7 +162,7 @@ try {
             ]);
 
             $decisionId = $pdo->lastInsertId();
-            $paymentDate = date('Y-m-d H:i:s', strtotime($decisionDate . ' +' . mt_rand(5, 15) . ' days'));
+            $paymentDate = date('Y-m-d', strtotime($decisionDate . ' +' . mt_rand(5, 15) . ' days'));
 
             $insertDisbursementStmt->execute([
                 $decisionId,

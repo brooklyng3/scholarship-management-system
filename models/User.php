@@ -168,4 +168,12 @@ class User
         $stmt->execute(['id' => $userId]);
         return (bool) $stmt->fetch();
     }
+
+    /** Đếm số lượng admin trong hệ thống */
+    public function countAdmins(): int
+    {
+        $stmt = $this->db->prepare("SELECT COUNT(*) FROM users WHERE role = 'admin'");
+        $stmt->execute();
+        return (int) $stmt->fetchColumn();
+    }
 }

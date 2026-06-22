@@ -136,6 +136,12 @@ class UserController
             redirect(url('users', 'index'));
         }
 
+        // Prevent deleting the last admin account
+        if ($user['role'] === 'admin' && $this->userModel->countAdmins() <= 1) {
+            set_flash('error', 'Cannot delete the last admin account. The system must have at least one admin.');
+            redirect(url('users', 'index'));
+        }
+
         // users có FK ON DELETE CASCADE tới student_profiles/staff_profiles/violation_records
         if ($this->userModel->delete($id)) {
             set_flash('success', 'User "' . $user['full_name'] . '" deleted (along with related records).');

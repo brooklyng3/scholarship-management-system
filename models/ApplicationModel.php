@@ -543,7 +543,6 @@ class ApplicationModel
                 ar.id,
                 ar.application_id,
                 ar.reviewer_id,
-                ar.score,
                 ar.comment,
                 ar.created_at,
                 u.full_name as reviewer_name
@@ -582,7 +581,6 @@ class ApplicationModel
                 'id'             => 0,
                 'application_id' => $applicationId,
                 'reviewer_id'    => $appData['reviewer_id'] ?? 0,
-                'score'          => 0,  // Kept numeric to avoid fatal TypeErrors inside view's number_format()
                 'comment'        => '', // Left blank as requested
                 'reviewer_name'  => $appData['reviewer_name'] ?? '', // Shows reviewer name if linked, otherwise blank
                 'created_at'     => $appData['decision_date'] ?? $appData['applied_date'] ?? date('Y-m-d H:i:s')
@@ -594,7 +592,7 @@ class ApplicationModel
 
     /**
      * Save a review for an application
-     * @param array $data Review data (application_id, reviewer_id, score, comment)
+     * @param array $data Review data (application_id, reviewer_id, comment)
      * @return bool True on success
      */
     public function saveReview(array $data): bool
@@ -604,10 +602,9 @@ class ApplicationModel
         
         $stmt = $this->pdo->prepare("
             INSERT INTO application_reviews 
-            (application_id, reviewer_id, score, comment) 
-            VALUES (?, ?, ?, ?)
+            (application_id, reviewer_id, comment) 
+            VALUES (?, ?, ?)
             ON DUPLICATE KEY UPDATE
-            score = VALUES(score),
             comment = VALUES(comment),
             created_at = NOW()
         ");
@@ -615,7 +612,6 @@ class ApplicationModel
         return $stmt->execute([
             $data['application_id'],
             $data['reviewer_id'],
-            $data['score'],
             $data['comment']
         ]);
     }
@@ -631,7 +627,6 @@ class ApplicationModel
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 application_id INT NOT NULL,
                 reviewer_id INT NOT NULL,
-                score DECIMAL(5,2) NOT NULL,
                 comment TEXT NOT NULL,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 UNIQUE KEY unique_app_review (application_id),
@@ -661,7 +656,8 @@ class ApplicationModel
             INNER JOIN users u ON a.user_id = u.id
             INNER JOIN scholarship_tiers st ON a.tier_id = st.id
             INNER JOIN scholarship_programs sp ON st.program_id = sp.id
-            WHERE a.reviewer_id = ?
+            WHERE (a.reviewer_id = ? OR a.reviewer_id IS NULL)
+            AND a.status IN ('pending', 'reviewing')
             ORDER BY a.id DESC
         ");
         $stmt->execute([$reviewerId]);
@@ -694,7 +690,8 @@ class ApplicationModel
             INNER JOIN users u ON a.user_id = u.id
             INNER JOIN scholarship_tiers st ON a.tier_id = st.id
             INNER JOIN scholarship_programs sp ON st.program_id = sp.id
-            WHERE a.reviewer_id = ?
+            WHERE (a.reviewer_id = ? OR a.reviewer_id IS NULL)
+            AND a.status IN ('pending', 'reviewing')
         ";
         
         $params = [$reviewerId];
@@ -741,7 +738,8 @@ class ApplicationModel
             INNER JOIN users u ON a.user_id = u.id
             INNER JOIN scholarship_tiers st ON a.tier_id = st.id
             INNER JOIN scholarship_programs sp ON st.program_id = sp.id
-            WHERE a.reviewer_id = ?
+            WHERE (a.reviewer_id = ? OR a.reviewer_id IS NULL)
+            AND a.status IN ('pending', 'reviewing')
         ";
         
         $params = [$reviewerId];

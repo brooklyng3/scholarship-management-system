@@ -628,7 +628,6 @@ class ApplicationController
         
         $currentUser = current_user();
         $applicationId = (int)($_POST['application_id'] ?? 0);
-        $score = trim($_POST['score'] ?? '');
         $comment = trim($_POST['comment'] ?? '');
         $status = trim($_POST['status'] ?? 'pending');
         
@@ -645,10 +644,6 @@ class ApplicationController
             } elseif ($currentUser['role'] === 'reviewer' && in_array($currentApp['status'], ['approved', 'rejected'], true)) {
                 $errors[] = "This application has already been finalized and can no longer be updated.";
             }
-        }
-        
-        if (!is_numeric($score) || $score < 0 || $score > 100) {
-            $errors[] = "Score must be a number between 0 and 100.";
         }
         
         if (empty($comment)) {
@@ -669,15 +664,10 @@ class ApplicationController
             return;
         }
         
-        // Sanitize inputs
-        $score = (float)$score;
-        $comment = htmlspecialchars($comment, ENT_QUOTES, 'UTF-8');
-        
-        // Save review
+        // Save review (store raw text - will be escaped during output)
         $reviewData = [
             'application_id' => $applicationId,
             'reviewer_id' => (int)$currentUser['id'],
-            'score' => $score,
             'comment' => $comment
         ];
         

@@ -155,7 +155,6 @@ require_once __DIR__ . '/../partials/header.php';
                 </div>
                 <div class="card-body">
                     <p><strong>Reviewer:</strong> <?= e($existingReview['reviewer_name']) ?></p>
-                    <p><strong>Score:</strong> <?= e($existingReview['score']) ?></p>
                     <p><strong>Comment:</strong></p>
                     <p class="border p-3 bg-light"><?= e($existingReview['comment']) ?></p>
                     <p class="text-muted mb-0"><small>Reviewed on: <?= e($existingReview['created_at']) ?></small></p>
@@ -175,27 +174,12 @@ require_once __DIR__ . '/../partials/header.php';
                     <input type="hidden" name="application_id" value="<?= e($application['id']) ?>">
 
                     <div class="mb-3">
-                        <label for="score" class="form-label">Score (0-100) <span class="text-danger">*</span></label>
-                        <input 
-                            type="number" 
-                            class="form-control" 
-                            id="score" 
-                            name="score" 
-                            min="0" 
-                            max="100" 
-                            step="0.01"
-                            value="<?= e($existingReview['score'] ?? '') ?>"
-                            required>
-                        <small class="form-text text-muted">Enter a numeric score between 0 and 100.</small>
-                    </div>
-
-                    <div class="mb-3">
                         <label for="comment" class="form-label">Review Comments <span class="text-danger">*</span></label>
                         <textarea 
                             class="form-control" 
                             id="comment" 
                             name="comment" 
-                            rows="8" 
+                            rows="10" 
                             required
                             placeholder="Provide detailed feedback on the application..."><?= e($existingReview['comment'] ?? '') ?></textarea>
                         <small class="form-text text-muted">Provide qualitative feedback and justification for your evaluation.</small>
@@ -229,9 +213,9 @@ require_once __DIR__ . '/../partials/header.php';
                 <h6 class="card-title">⚠️ Review Guidelines</h6>
                 <ul class="mb-0 small">
                     <li>Review all supporting documents thoroughly</li>
-                    <li>Ensure the score reflects the application quality</li>
                     <li>Provide constructive and specific feedback</li>
                     <li>Update the status appropriately based on your evaluation</li>
+                    <li>Ensure your comments justify the decision</li>
                 </ul>
             </div>
         </div>
@@ -241,14 +225,7 @@ require_once __DIR__ . '/../partials/header.php';
 <script>
 // Client-side validation
 document.getElementById('reviewForm').addEventListener('submit', function(e) {
-    const score = parseFloat(document.getElementById('score').value);
     const comment = document.getElementById('comment').value.trim();
-    
-    if (isNaN(score) || score < 0 || score > 100) {
-        e.preventDefault();
-        alert('Please enter a valid score between 0 and 100.');
-        return false;
-    }
     
     if (comment.length < 10) {
         e.preventDefault();

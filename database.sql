@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 22, 2026 at 12:28 PM
+-- Generation Time: Jun 22, 2026 at 07:28 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -45,7 +45,6 @@ INSERT INTO `applications` (`id`, `user_id`, `tier_id`, `profile_id`, `reviewer_
 (1, 6, 1, 1, 3, 'approved', '2026-06-22 07:53:50'),
 (2, 8, 1, 3, 3, 'approved', '2026-06-22 07:53:50'),
 (3, 10, 2, 5, 4, 'waitlisted', '2026-06-22 07:53:50'),
-(4, 12, 2, 7, 3, 'reviewing', '2026-06-22 07:53:50'),
 (5, 7, 3, 2, 4, 'rejected', '2026-06-22 07:53:50'),
 (6, 9, 3, 4, 3, 'approved', '2026-06-22 07:53:50'),
 (7, 11, 3, 6, 4, 'pending', '2026-06-22 07:53:50'),
@@ -64,14 +63,15 @@ INSERT INTO `applications` (`id`, `user_id`, `tier_id`, `profile_id`, `reviewer_
 (20, 18, 3, 13, 3, 'pending', '2026-06-22 07:53:50'),
 (21, 16, 6, 11, 5, 'rejected', '2026-06-22 07:53:50'),
 (22, 17, 1, 12, 3, 'reviewing', '2026-06-22 07:53:50'),
-(23, 12, 5, 7, 5, 'waitlisted', '2026-06-22 07:53:50'),
 (24, 6, 4, 1, 4, 'rejected', '2026-06-22 07:53:50'),
 (25, 8, 4, 3, 3, 'pending', '2026-06-22 07:53:50'),
 (26, 9, 1, 4, 3, 'reviewing', '2026-06-22 07:53:50'),
 (27, 10, 4, 5, 4, 'approved', '2026-06-22 07:53:50'),
 (28, 19, 5, 14, 5, 'reviewing', '2026-06-22 07:53:50'),
 (29, 20, 8, 15, 3, 'pending', '2026-06-22 07:53:50'),
-(30, 11, 8, 6, 4, 'approved', '2026-06-22 07:53:50');
+(30, 11, 8, 6, 4, 'approved', '2026-06-22 07:53:50'),
+(32, 12, 4, 7, NULL, 'approved', '2026-06-22 16:38:52'),
+(33, 12, 1, 7, NULL, 'rejected', '2026-06-22 16:47:41');
 
 -- --------------------------------------------------------
 
@@ -98,7 +98,32 @@ INSERT INTO `application_documents` (`id`, `application_id`, `document_type`, `f
 (4, 9, 'poverty_proof', '/uploads/docs/proof_stu15.pdf', '2026-06-22 07:53:50'),
 (5, 10, 'cert_ctf', '/uploads/docs/ctf_stu09.pdf', '2026-06-22 07:53:50'),
 (6, 14, 'national_prize', '/uploads/docs/prize_stu13.pdf', '2026-06-22 07:53:50'),
-(7, 27, 'poverty_proof', '/uploads/docs/proof_stu05.pdf', '2026-06-22 07:53:50');
+(7, 27, 'poverty_proof', '/uploads/docs/proof_stu05.pdf', '2026-06-22 07:53:50'),
+(11, 32, 'proof', 'uploads/docs/app_32_1782146332_6a7332e79010a9a0.pdf', '2026-06-22 16:38:52'),
+(12, 32, 'proof', 'uploads/docs/app_32_1782146332_0dd19a65ed25d661.jpg', '2026-06-22 16:38:52'),
+(13, 33, 'proof', 'uploads/docs/app_33_1782146861_39fca92780f0845c.png', '2026-06-22 16:47:41');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `application_reviews`
+--
+
+CREATE TABLE `application_reviews` (
+  `id` int(11) NOT NULL,
+  `application_id` int(11) NOT NULL,
+  `reviewer_id` int(11) NOT NULL,
+  `comment` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `application_reviews`
+--
+
+INSERT INTO `application_reviews` (`id`, `application_id`, `reviewer_id`, `comment`, `created_at`) VALUES
+(1, 33, 4, 'Are you kidding me?', '2026-06-22 17:17:13'),
+(4, 32, 4, 'Congrats my friend~', '2026-06-22 17:17:59');
 
 -- --------------------------------------------------------
 
@@ -457,6 +482,14 @@ ALTER TABLE `application_documents`
   ADD KEY `application_id` (`application_id`);
 
 --
+-- Indexes for table `application_reviews`
+--
+ALTER TABLE `application_reviews`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_app_review` (`application_id`),
+  ADD KEY `reviewer_id` (`reviewer_id`);
+
+--
 -- Indexes for table `award_certificates`
 --
 ALTER TABLE `award_certificates`
@@ -552,13 +585,19 @@ ALTER TABLE `violation_records`
 -- AUTO_INCREMENT for table `applications`
 --
 ALTER TABLE `applications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `application_documents`
 --
 ALTER TABLE `application_documents`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- AUTO_INCREMENT for table `application_reviews`
+--
+ALTER TABLE `application_reviews`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `award_certificates`
@@ -650,6 +689,13 @@ ALTER TABLE `applications`
 --
 ALTER TABLE `application_documents`
   ADD CONSTRAINT `application_documents_ibfk_1` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `application_reviews`
+--
+ALTER TABLE `application_reviews`
+  ADD CONSTRAINT `application_reviews_ibfk_1` FOREIGN KEY (`application_id`) REFERENCES `applications` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `application_reviews_ibfk_2` FOREIGN KEY (`reviewer_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `award_certificates`

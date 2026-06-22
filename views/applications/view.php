@@ -55,23 +55,14 @@ require_once __DIR__ . '/../partials/header.php';
         </div>
     </div>
 
-    <!-- Right Side: Official Committee Assessment Grades & Feedback Notes -->
+    <!-- Right Side: Official Committee Assessment & Feedback Notes -->
     <div class="col-md-6">
         <div class="card shadow-sm border-0 h-100">
             <div class="card-header bg-primary text-white">
-                <h6 class="mb-0">🏆 Official Academic Review Assessment</h6>
+                <h6 class="mb-0">🏆 Official Review Assessment</h6>
             </div>
             <div class="card-body">
                 <?php if ($existingReview): ?>
-                    <div class="mb-4 text-center p-3 bg-light rounded border">
-                        <span class="text-muted d-block small text-uppercase font-weight-bold">Total Weighted Evaluation Score</span>
-                        <?php if (isset($existingReview['id']) && $existingReview['id'] === 0): ?>
-                            <h2 class="text-secondary font-weight-bold my-1">N/A</h2>
-                        <?php else: ?>
-                            <h2 class="text-success font-weight-bold my-1"><?= number_format($existingReview['score'], 2) ?> <span class="fs-5 text-muted">/ 100</span></h2>
-                        <?php endif; ?>
-                    </div>
-                    
                     <div class="mb-3">
                         <label class="form-label text-muted small text-uppercase font-weight-bold d-block">Reviewer Feedback & Comments</label>
                         <div class="p-3 bg-white border rounded text-secondary" style="white-space: pre-wrap; min-height: 140px; font-size: 0.95rem;"><?= e($existingReview['comment']) ?></div>
@@ -83,7 +74,7 @@ require_once __DIR__ . '/../partials/header.php';
                 <?php else: ?>
                     <div class="text-center py-5 my-4 text-muted">
                         <h5 class="text-secondary">🔄 Under Evaluation</h5>
-                        <p class="small mb-0 px-3">Your credentials and uploads are currently being processed by the evaluation board. Grades and quantitative notes will post here instantly once finalized.</p>
+                        <p class="small mb-0 px-3">Your credentials and uploads are currently being processed by the evaluation board. Feedback will post here once the review is finalized.</p>
                     </div>
                 <?php endif; ?>
             </div>
