@@ -25,7 +25,7 @@ require_once __DIR__ . '/../partials/header.php';
         <?php endif; ?>
 
         <form method="POST" action="<?= e(url('scholarship_programs', 'store')) ?>">
-            <?= csrf_field() /* [NEW] */ ?>
+            <?= csrf_field() ?>
 
             <!-- title -->
             <div class="mb-3">
@@ -60,7 +60,91 @@ require_once __DIR__ . '/../partials/header.php';
                     <input type="date" name="end_date" class="form-control" value="<?= e($old['end_date'] ?? '') ?>">
                 </div>
             </div>
+            <!-- NEW: Module 3 Eligibility Cutoffs Section -->
+            <div class="bg-light p-3 rounded mb-3 border border-dashed">
+                <h6 class="text-primary mb-2">🛡 Entry Requirements (Eligibility Thresholds)</h6>
+                <div class="row">
+                    <div class="col">
+                        <label class="form-label small font-weight-bold">Minimum GPA</label>
+                        <input type="number" name="min_gpa" class="form-control" 
+                               step="0.01" min="0.00" max="4.00" 
+                               value="<?= e($old['min_gpa'] ?? '0.00') ?>" 
+                               placeholder="e.g., 3.20">
+                    </div>
+                    <div class="col">
+                        <label class="form-label small font-weight-bold">Min Training Score (ĐRL)</label>
+                        <input type="number" name="min_training_score" class="form-control" 
+                               step="1" min="0" max="100" 
+                               value="<?= e($old['min_training_score'] ?? '0') ?>" 
+                               placeholder="e.g., 75">
+                    </div>
+                </div>
+                <span class="text-muted extra-small d-block mt-1">Students falling below these criteria values will be automatically blocked upon application submission.</span>
+            </div>
+            <div class="bg-light p-3 rounded mb-3 border">
+                <h6 class="text-success mb-3">📊 Evaluation Scoring Weights (Must equal exactly 100%)</h6>
+                
+                <div id="criteria-fixed-wrapper">
+                    <div class="row g-2 mb-2 align-items-center">
+                        <div class="col-7">
+                            <label class="form-label mb-0 font-weight-bold text-secondary">Điểm Trung bình Tích lũy (GPA)</label>
+                        </div>
+                        <div class="col-5">
+                            <div class="input-group input-group-sm">
+                                <input type="number" name="weight_gpa" id="weight_gpa" class="form-control weight-input" value="40.00" step="0.01" min="0" max="100" required oninput="calculateFixedTotal()">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div>
 
+                    <div class="row g-2 mb-2 align-items-center">
+                        <div class="col-7">
+                            <label class="form-label mb-0 font-weight-bold text-secondary">Điểm Rèn luyện (Training Score)</label>
+                        </div>
+                        <div class="col-5">
+                            <div class="input-group input-group-sm">
+                                <input type="number" name="weight_training" id="weight_training" class="form-control weight-input" value="30.00" step="0.01" min="0" max="100" required oninput="calculateFixedTotal()">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row g-2 mb-2 align-items-center">
+                        <div class="col-7">
+                            <label class="form-label mb-0 font-weight-bold text-secondary">Chứng chỉ & Hồ sơ Minh chứng (Proof Upload)</label>
+                        </div>
+                        <div class="col-5">
+                            <div class="input-group input-group-sm">
+                                <input type="number" name="weight_proof" id="weight_proof" class="form-control weight-input" value="30.00" step="0.01" min="0" max="100" required oninput="calculateFixedTotal()">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-3 pt-2 border-top text-end small">
+                    <span class="text-muted">Running Balance Total:</span> 
+                    <strong id="weight-total" class="text-success">100.00%</strong>
+                </div>
+            </div>
+
+            <script>
+            function calculateFixedTotal() {
+                const gpa = parseFloat(document.getElementById('weight_gpa').value || 0);
+                const training = parseFloat(document.getElementById('weight_training').value || 0);
+                const proof = parseFloat(document.getElementById('weight_proof').value || 0);
+                
+                const total = gpa + training + proof;
+                const totalEl = document.getElementById('weight-total');
+                
+                totalEl.textContent = total.toFixed(2) + '%';
+                if (Math.abs(total - 100) < 0.001) {
+                    totalEl.className = "text-success";
+                } else {
+                    totalEl.className = "text-danger";
+                }
+            }
+            </script>
             <!-- status (ENUM) -->
             <div class="mb-3">
                 <label class="form-label">Status (status)</label>
