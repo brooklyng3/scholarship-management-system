@@ -66,7 +66,13 @@ require_once __DIR__ . '/../partials/header.php';
                                 class="btn btn-sm btn-info text-white">Review</a>
                             <?php endif; ?>
                             
-                            <?php if (in_array($currentUser['role'], ['admin', 'staff', 'student'], true)): ?>
+                            <?php 
+                            // Admins/Staff can edit anything, but students can ONLY edit if the application is pending
+                            $canEdit = in_array($currentUser['role'], ['admin', 'staff'], true) || 
+                                    ($currentUser['role'] === 'student' && $app['status'] === 'pending');
+
+                            if ($canEdit): 
+                            ?>
                                 <a href="index.php?controller=applications&action=edit&id=<?= htmlspecialchars($app['id']) ?>" 
                                 class="btn btn-sm btn-secondary">Edit</a>
                             <?php endif; ?>

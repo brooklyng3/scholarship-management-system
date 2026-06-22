@@ -48,9 +48,8 @@ $canManage = is_logged_in() && in_array($currentUser['role'], ['admin', 'reviewe
             $escape = false;
             include __DIR__ . '/../partials/components/detail_row.php';
 
-            // Remaining data rows
+            // Remaining data rows (Conduct Score Row Removed Successfully)
             $label = 'Accumulated Credits:'; $value = $profile['accumulated_credits'] ?: '—'; $escape = true; include __DIR__ . '/../partials/components/detail_row.php';
-            $label = 'Conduct Score:'; $value = $profile['conduct_score'] ?: '—'; include __DIR__ . '/../partials/components/detail_row.php';
             
             // EXPOSED: New dynamic column for Module 3 Threshold Valuations
             $label = 'Training Score (Điểm rèn luyện):'; 
@@ -96,14 +95,14 @@ $canManage = is_logged_in() && in_array($currentUser['role'], ['admin', 'reviewe
                             <th>Major</th>
                             <th class="text-center">GPA</th>
                             <th class="text-center">Credits</th>
-                            <th class="text-center">Conduct</th>
                             <th class="text-center">Training Score</th>
                             <th class="text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                     <?php if (empty($profiles)): ?>
-                        <tr><td colspan="10" class="text-center text-muted py-4">No student profiles found.</td></tr>
+                        <!-- Column length counter adjusted down to 9 elements -->
+                        <tr><td colspan="9" class="text-center text-muted py-4">No student profiles found.</td></tr>
                     <?php else: ?>
                         <?php foreach ($profiles as $p): ?>
                         <tr>
@@ -120,7 +119,6 @@ $canManage = is_logged_in() && in_array($currentUser['role'], ['admin', 'reviewe
                                 <span class="badge bg-<?= $gpaBadge ?>"><?= e($p['current_gpa']) ?></span>
                             </td>
                             <td class="text-center"><?= e($p['accumulated_credits']) ?></td>
-                            <td class="text-center"><?= e($p['conduct_score']) ?></td>
                             
                             <!-- EXPOSED: Table display row for administrative auditing passes -->
                             <td class="text-center font-weight-bold text-primary">
@@ -130,7 +128,7 @@ $canManage = is_logged_in() && in_array($currentUser['role'], ['admin', 'reviewe
                             <td class="text-center">
                                 <?php if ($canManage): ?>
                                     <a href="<?= e(url('student_profiles', 'edit', ['id' => $p['id']])) ?>" class="btn btn-sm btn-outline-primary">Edit</a>
-                                    <a href="<?= e(url('student_profiles', 'delete', ['id' => $p['id'], 'csrf_token' => csrf_token()])) ?>"
+                                    <a href="<?= e(url('url', 'delete', ['id' => $p['id'], 'csrf_token' => csrf_token()])) ?>"
                                        class="btn btn-sm btn-outline-danger"
                                        onclick="return confirm('Delete this student profile?')">Delete</a>
                                 <?php else: ?>

@@ -234,6 +234,12 @@ class ApplicationController
             set_flash('error', 'You do not have permission to edit this application.');
             redirect(url('applications', 'index'));
         }
+
+        // SECURITY GUARD: Reject edits on processed records
+        if ($isStudent && $application['status'] !== 'pending') {
+            set_flash('error', 'You can only edit applications that are currently pending.');
+            redirect(url('applications', 'index'));
+        }
         
         $students = $this->model->getAllStudents();
         $tiers = $this->model->getAllTiers();
@@ -263,6 +269,12 @@ class ApplicationController
         
         if ($isStudent && (int)$application['user_id'] !== (int)$currentUser['id']) {
             set_flash('error', 'You do not have permission to update this application.');
+            redirect(url('applications', 'index'));
+        }
+
+        // SECURITY GUARD: Prevent POST request parameter manipulation on processed records
+        if ($isStudent && $application['status'] !== 'pending') {
+            set_flash('error', 'You can only update applications that are currently pending.');
             redirect(url('applications', 'index'));
         }
         
