@@ -8,16 +8,17 @@ require_once __DIR__ . '/../config/database.php';
  */
 class ScholarshipProgram
 {
+
     public const TYPES = [
-        'internal_academic' => 'Học bổng nội bộ (Học tập)',
-        'corporate_sponsor' => 'Học bổng doanh nghiệp tài trợ',
-        'social_support'    => 'Hỗ trợ xã hội',
+        'internal_academic' => 'Internal Academic',
+        'corporate_sponsor' => 'Corporate Sponsor',
+        'social_support'    => 'Social Support',
     ];
 
     public const STATUSES = [
-        'draft'  => 'Bản nháp',
-        'active' => 'Đang mở',
-        'closed' => 'Đã đóng',
+        'draft'  => 'Draft',
+        'active' => 'Active',
+        'closed' => 'Closed',
     ];
 
     private PDO $db;
