@@ -123,33 +123,39 @@ class UserController
         $this->render('users/edit', ['user' => $user, 'errors' => $errors]);
     }
 
-    /** GET index.php?controller=users&action=delete&id=..&csrf_token=.. */
+    /** POST/DELETE index.php?controller=users&action=delete&id=.. (AJAX) */
     public function delete(): void
     {
-        require_role(['admin']); // [NEW]
-        verify_csrf();           // [NEW] token passed as query string on the confirm link
+        require_role(['admin']);
+        verify_csrf();
+
+        // Return JSON for AJAX requests
+        header('Content-Type: application/json');
 
         $id = (int)($_GET['id'] ?? 0);
         $user = $this->userModel->getById($id);
+        
         if (!$user) {
-            set_flash('error', 'User not found.');
-            redirect(url('users', 'index'));
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'User not found.']);
+            exit;
         }
 
         // Prevent deleting the last admin account
         if ($user['role'] === 'admin' && $this->userModel->countAdmins() <= 1) {
-            set_flash('error', 'Cannot delete the last admin account. The system must have at least one admin.');
-            redirect(url('users', 'index'));
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Cannot delete the last admin account. The system must have at least one admin.']);
+            exit;
         }
 
         // users có FK ON DELETE CASCADE tới student_profiles/staff_profiles/violation_records
         if ($this->userModel->delete($id)) {
-            set_flash('success', 'User "' . $user['full_name'] . '" deleted (along with related records).');
+            echo json_encode(['success' => true, 'message' => 'User "' . $user['full_name'] . '" deleted (along with related records).']);
         } else {
-            set_flash('error', 'Unable to delete this user.');
+            http_response_code(500);
+            echo json_encode(['success' => false, 'message' => 'Unable to delete this user.']);
         }
-
-        redirect(url('users', 'index'));
+        exit;
     }
 
     private function validate(array $data, bool $isCreate, ?int $excludeId = null): array

@@ -73,9 +73,10 @@ require_once __DIR__ . '/../partials/header.php';
                         <td class="text-center">
                             <?php if (is_logged_in() && current_user()['role'] === 'admin'): ?>
                                 <a href="<?= e(url('users', 'edit', ['id' => $u['id']])) ?>" class="btn btn-sm btn-outline-primary">Edit</a>
-                                <a href="<?= e(url('users', 'delete', ['id' => $u['id'], 'csrf_token' => csrf_token()])) ?>"
-                                   class="btn btn-sm btn-outline-danger"
-                                   onclick="return confirm('Delete this user and all related data?')">Delete</a>
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-danger delete-user-btn"
+                                        data-user-id="<?= e($u['id']) ?>"
+                                        data-user-name="<?= e($u['full_name']) ?>">Delete</button>
                             <?php else: ?>
                                 <span class="text-muted small">Admin Only</span>
                             <?php endif; ?>
@@ -90,5 +91,85 @@ require_once __DIR__ . '/../partials/header.php';
 </div>
 
 <div class="mt-3"><?= $pagination /* [NEW] pagination controls */ ?></div>
+
+<script>
+// AJAX Delete User Implementation (Vanilla JS)
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.delete-user-btn');
+    
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const userName = this.getAttribute('data-user-name');
+            
+            if (!confirm(`Delete user "${userName}" and all related data?`)) {
+                return;
+            }
+            
+            // Disable button during request
+            this.disabled = true;
+            this.textContent = 'Deleting...';
+            
+            // Prepare delete URL
+            const deleteUrl = `index.php?controller=users&action=delete&id=${userId}&csrf_token=<?= e(csrf_token()) ?>`;
+            
+            // Send AJAX DELETE request
+            fetch(deleteUrl, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showFlashMessage('success', data.message);
+                    
+                    // Remove the row from DOM
+                    const row = this.closest('tr');
+                    row.style.transition = 'opacity 0.3s';
+                    row.style.opacity = '0';
+                    setTimeout(() => row.remove(), 300);
+                } else {
+                    // Show error message
+                    showFlashMessage('danger', data.message);
+                    this.disabled = false;
+                    this.textContent = 'Delete';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showFlashMessage('danger', 'An error occurred while deleting the user.');
+                this.disabled = false;
+                this.textContent = 'Delete';
+            });
+        });
+    });
+    
+    // Helper function to display flash messages dynamically
+    function showFlashMessage(type, message) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+        alertDiv.role = 'alert';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        
+        // Insert at the top of the page content
+        const container = document.querySelector('.container');
+        if (container) {
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => alertDiv.remove(), 150);
+            }, 5000);
+        }
+    }
+});
+</script>
 
 <?php require_once __DIR__ . '/../partials/footer.php'; ?>
