@@ -280,15 +280,16 @@ class ApplicationModel
     }
 
     /**
-     * Get existing review for an application
+     * Get existing review for an application with a multi-table status fallback engine
      * @param int $applicationId Application ID
-     * @return array|false Review data or false if not found
+     * @return array|false Review data or false if not found/under evaluation
      */
     public function getReviewByApplicationId(int $applicationId): array|false
     {
         // Ensure table exists
         $this->ensureReviewsTableExists();
         
+        // 1. Primary Check: Look into explicit feedback reviews table
         $stmt = $this->pdo->prepare("
             SELECT 
                 ar.id,
@@ -305,7 +306,42 @@ class ApplicationModel
             LIMIT 1
         ");
         $stmt->execute([$applicationId]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+        $review = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($review) {
+            return $review;
+        }
+
+        // 2. Fallback Engine: If no explicit feedback exists, check if application state is finalized
+        $stmtApp = $this->pdo->prepare("
+            SELECT 
+                a.status,
+                a.reviewer_id,
+                a.applied_date,
+                u.full_name as reviewer_name,
+                sd.decision_date
+            FROM applications a
+            LEFT JOIN users u ON a.reviewer_id = u.id
+            LEFT JOIN scholarship_decisions sd ON a.id = sd.application_id
+            WHERE a.id = ?
+        ");
+        $stmtApp->execute([$applicationId]);
+        $appData = $stmtApp->fetch(PDO::FETCH_ASSOC);
+
+        // If the application is officially Approved or Rejected, display the evaluation card with the actual fields left blank
+        if ($appData && in_array($appData['status'], ['approved', 'rejected'], true)) {
+            return [
+                'id'             => 0,
+                'application_id' => $applicationId,
+                'reviewer_id'    => $appData['reviewer_id'] ?? 0,
+                'score'          => 0,  // Kept numeric to avoid fatal TypeErrors inside view's number_format()
+                'comment'        => '', // Left blank as requested
+                'reviewer_name'  => $appData['reviewer_name'] ?? '', // Shows reviewer name if linked, otherwise blank
+                'created_at'     => $appData['decision_date'] ?? $appData['applied_date'] ?? date('Y-m-d H:i:s')
+            ];
+        }
+
+        return false;
     }
 
     /**
