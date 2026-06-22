@@ -59,30 +59,19 @@ require_once __DIR__ . '/../partials/header.php';
                     
                     <td class="small text-secondary"><?= htmlspecialchars($app['applied_date']) ?></td>
                     
-                    <td style="text-align: center;">
-                        <div class="actions d-flex gap-2 justify-content-center">
-                            <?php if (in_array($currentUser['role'], ['admin', 'reviewer'], true)): ?>
-                                <a href="index.php?controller=applications&action=review&id=<?= htmlspecialchars($app['id']) ?>" 
-                                class="btn btn-sm btn-info text-white">Review</a>
-                            <?php endif; ?>
-                            
-                            <?php 
-                            // Admins/Staff can edit anything, but students can ONLY edit if the application is pending
-                            $canEdit = in_array($currentUser['role'], ['admin', 'staff'], true) || 
-                                    ($currentUser['role'] === 'student' && $app['status'] === 'pending');
+                    <td class="text-center">
+                        <?php 
+                        // Admins retain master override access, but reviewers are blocked if the application is finalized
+                        $isFinalized = in_array($app['status'], ['approved', 'rejected'], true);
+                        $canReview = ($currentUser['role'] === 'admin') || ($currentUser['role'] === 'reviewer' && !$isFinalized);
 
-                            if ($canEdit): 
-                            ?>
-                                <a href="index.php?controller=applications&action=edit&id=<?= htmlspecialchars($app['id']) ?>" 
-                                class="btn btn-sm btn-secondary">Edit</a>
-                            <?php endif; ?>
-                            
-                            <?php if (in_array($currentUser['role'], ['admin', 'staff'], true)): ?>
-                                <button type="button" 
-                                        class="btn btn-sm btn-danger delete-application-btn" 
-                                        data-id="<?= htmlspecialchars($app['id']) ?>">Delete</button>
-                            <?php endif; ?>
-                        </div>
+                        if ($canReview): 
+                        ?>
+                            <a href="index.php?controller=applications&action=review&id=<?= htmlspecialchars($app['id']) ?>" 
+                            class="btn btn-sm btn-info text-white">Review</a>
+                        <?php else: ?>
+                            <span class="badge bg-secondary p-2 small">Locked</span>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>

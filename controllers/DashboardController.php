@@ -22,7 +22,7 @@ class DashboardController
      */
     public function index(): void
     {
-        require_role(['admin', 'reviewer', 'staff']);
+        require_role(['admin','staff']);
 
         $approvalRate = $this->model->getApprovalRate();
         $utilizationRate = $this->model->getUtilizationRate();

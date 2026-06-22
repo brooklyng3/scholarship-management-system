@@ -363,11 +363,20 @@ class ApplicationController
     {
         require_role(['reviewer', 'admin']);
         
+        // FIX: Define the current user variable up front so the security guard can use it
+        $currentUser = current_user();
+        
         $id = (int)($_GET['id'] ?? 0);
         $application = $this->model->getApplicationWithDetails($id);
         
         if (!$application) {
             set_flash('error', 'Application not found.');
+            redirect(url('applications', 'index'));
+        }
+        
+        // SECURITY GUARD: Stop reviewers from accessing processed records
+        if ($currentUser['role'] === 'reviewer' && in_array($application['status'], ['approved', 'rejected'], true)) {
+            set_flash('error', 'Reviewers are not permitted to modify finalized applications.');
             redirect(url('applications', 'index'));
         }
         
@@ -377,7 +386,7 @@ class ApplicationController
         // Get existing review if any
         $existingReview = $this->model->getReviewByApplicationId($id);
         
-        $currentUser = current_user();
+        // REMOVED from here since it's now at the top
         $errors = [];
         
         require __DIR__ . '/../views/applications/review.php';
@@ -401,6 +410,14 @@ class ApplicationController
         
         if ($applicationId === 0) {
             $errors[] = "Invalid application ID.";
+        } else {
+            // SECURITY GUARD: Verify the running database status before changing elements
+            $currentApp = $this->model->getById($applicationId);
+            if (!$currentApp) {
+                $errors[] = "Application not found.";
+            } elseif ($currentUser['role'] === 'reviewer' && in_array($currentApp['status'], ['approved', 'rejected'], true)) {
+                $errors[] = "This application has already been finalized and can no longer be updated.";
+            }
         }
         
         if (!is_numeric($score) || $score < 0 || $score > 100) {

@@ -27,14 +27,17 @@ $pageTitle = $pageTitle ?? 'System & Users';
         </button>
         <div class="collapse navbar-collapse" id="navMain">
             <ul class="navbar-nav me-auto">
-                <?php if (isset(current_user()['role']) && in_array(current_user()['role'], ['admin', 'staff', 'reviewer'], true)): ?>
+                <?php if (isset(current_user()['role']) && in_array(current_user()['role'], ['admin', 'staff'], true)): ?>
                     <li class="nav-item"><a class="nav-link" href="<?= e(url('dashboard', 'index')) ?>">Dashboard</a></li>
                 <?php endif; ?>
                 <li class="nav-item"><a class="nav-link" href="<?= e(url('scholarship_programs', 'index')) ?>">Scholarship Programs</a></li>
 
                 <?php if (isset(current_user()['role'])): ?>
                     <?php if (in_array(current_user()['role'], ['admin', 'reviewer', 'staff'], true)): ?>
-                        <li class="nav-item"><a class="nav-link" href="<?= e(url('users', 'index')) ?>">Users</a></li>
+                        <?php if (current_user()['role'] === 'admin'): ?>
+                            <li class="nav-item"><a class="nav-link" href="<?= e(url('users', 'index')) ?>">Users</a></li>
+                        <?php endif; ?>
+                        
                         <li class="nav-item"><a class="nav-link" href="<?= e(url('scholarship_tiers', 'index')) ?>">Tiers</a></li>
                         <li class="nav-item"><a class="nav-link" href="<?= e(url('applications', 'index')) ?>">Applications</a></li>
                         <?php else: ?>
