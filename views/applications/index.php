@@ -60,18 +60,44 @@ require_once __DIR__ . '/../partials/header.php';
                     <td class="small text-secondary"><?= htmlspecialchars($app['applied_date']) ?></td>
                     
                     <td class="text-center">
-                        <?php 
-                        // Admins retain master override access, but reviewers are blocked if the application is finalized
-                        $isFinalized = in_array($app['status'], ['approved', 'rejected'], true);
-                        $canReview = ($currentUser['role'] === 'admin') || ($currentUser['role'] === 'reviewer' && !$isFinalized);
+                        <div class="actions d-flex gap-2 justify-content-center">
+                            <?php if ($currentUser['role'] === 'student'): ?>
+                                <!-- Student Option 1: Can ALWAYS view their own grades & feedback -->
+                                <a href="index.php?controller=applications&action=view&id=<?= htmlspecialchars($app['id']) ?>" 
+                                   class="btn btn-sm btn-info text-white">View</a>
+                                
+                                <!-- Student Option 2: Can ONLY edit if the file is still pending -->
+                                <?php if ($app['status'] === 'pending'): ?>
+                                    <a href="index.php?controller=applications&action=edit&id=<?= htmlspecialchars($app['id']) ?>" 
+                                       class="btn btn-sm btn-secondary">Edit</a>
+                                <?php endif; ?>
+                                
+                            <?php else: ?>
+                                <!-- ADMINISTRATIVE & REVIEWER ACTIONS GRID -->
+                                <?php if (in_array($currentUser['role'], ['admin', 'reviewer'], true)): ?>
+                                    <?php 
+                                    $isFinalized = in_array($app['status'], ['approved', 'rejected'], true);
+                                    $canReview = ($currentUser['role'] === 'admin') || ($currentUser['role'] === 'reviewer' && !$isFinalized);
 
-                        if ($canReview): 
-                        ?>
-                            <a href="index.php?controller=applications&action=review&id=<?= htmlspecialchars($app['id']) ?>" 
-                            class="btn btn-sm btn-info text-white">Review</a>
-                        <?php else: ?>
-                            <span class="badge bg-secondary p-2 small">Locked</span>
-                        <?php endif; ?>
+                                    if ($canReview):
+                                    ?>
+                                        <a href="index.php?controller=applications&action=review&id=<?= htmlspecialchars($app['id']) ?>" 
+                                           class="btn btn-sm btn-info text-white">Review</a>[cite: 11]
+                                    <?php else:
+                                    ?>
+                                        <span class="badge bg-secondary p-2 small">Locked</span>[cite: 11]
+                                    <?php endif; ?>
+                                <?php endif; ?>
+                                
+                                <?php if (in_array($currentUser['role'], ['admin', 'staff'], true)): ?>
+                                    <a href="index.php?controller=applications&action=edit&id=<?= htmlspecialchars($app['id']) ?>" 
+                                       class="btn btn-sm btn-secondary">Edit</a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-danger delete-application-btn" 
+                                            data-id="<?= htmlspecialchars($app['id']) ?>">Delete</button>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                     </td>
                 </tr>
                 <?php endforeach; ?>

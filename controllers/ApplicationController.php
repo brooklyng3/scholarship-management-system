@@ -26,17 +26,43 @@ class ApplicationController
         $currentUser = current_user();
         
         if ($currentUser['role'] === 'student') {
-            // Students only see what they submitted themselves
+            // RESTORED: Students can ONLY see what they submitted themselves
             $applications = $this->model->getByUserId((int)$currentUser['id']);
         } elseif ($currentUser['role'] === 'reviewer') {
-            // RE-01 FIX: Reviewers are restricted to their assigned tasks only
             $applications = $this->model->getByReviewerId((int)$currentUser['id']);
         } else {
-            // Admins and corporate staff see the full system lifecycle list
             $applications = $this->model->getAll();
         }
         
         require __DIR__ . '/../views/applications/index.php';
+    }
+
+    /**
+     * NEW: Secure Read-Only Details Viewer for Students & Staff
+     */
+    public function view(): void
+    {
+        require_role(['admin', 'reviewer', 'staff', 'student']);
+        
+        $currentUser = current_user();
+        $id = (int)($_GET['id'] ?? 0);
+        $application = $this->model->getApplicationWithDetails($id);
+        
+        if (!$application) {
+            set_flash('error', 'Application not found.');
+            redirect(url('applications', 'index'));
+        }
+        
+        // SECURITY GATE: Prevent URL tampering. Students cannot view other students' applications.
+        if ($currentUser['role'] === 'student' && (int)$application['user_id'] !== (int)$currentUser['id']) {
+            set_flash('error', 'You do not have permission to view this application.');
+            redirect(url('applications', 'index'));
+        }
+        
+        $documents = $this->documentModel->getByApplicationId($id);
+        $existingReview = $this->model->getReviewByApplicationId($id);
+        
+        require __DIR__ . '/../views/applications/view.php';
     }
 
     /**
