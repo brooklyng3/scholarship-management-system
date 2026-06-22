@@ -271,22 +271,24 @@ CREATE TABLE `scholarship_tiers` (
   `program_id` int(11) NOT NULL,
   `tier_name` varchar(100) NOT NULL,
   `reward_amount` decimal(12,2) NOT NULL,
-  `quota` int(11) DEFAULT 0
+  `quota` int(11) DEFAULT 0,
+  `min_gpa` decimal(3,2) DEFAULT 0.00,
+  `min_training_score` int(11) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `scholarship_tiers`
 --
 
-INSERT INTO `scholarship_tiers` (`id`, `program_id`, `tier_name`, `reward_amount`, `quota`) VALUES
-(1, 1, 'Excellence Rank 1', 15000000.00, 10),
-(2, 1, 'Excellence Rank 2', 10000000.00, 20),
-(3, 1, 'Good Rank', 5000000.00, 50),
-(4, 2, 'Standard Financial Grant', 8000000.00, 100),
-(5, 3, 'VCS First Prize', 30000000.00, 2),
-(6, 3, 'VCS Second Prize', 15000000.00, 5),
-(7, 4, 'Chu Van An Gold Medal', 25000000.00, 5),
-(8, 4, 'Chu Van An Silver Medal', 15000000.00, 10);
+INSERT INTO `scholarship_tiers` (`id`, `program_id`, `tier_name`, `reward_amount`, `quota`, `min_gpa`, `min_training_score`) VALUES
+(1, 1, 'Excellence Rank 1', 15000000.00, 10, 3.50, 85),
+(2, 1, 'Excellence Rank 2', 10000000.00, 20, 3.20, 75),
+(3, 1, 'Good Rank', 5000000.00, 50, 3.20, 75),
+(4, 2, 'Standard Financial Grant', 8000000.00, 100, 2.00, 60),
+(5, 3, 'VCS First Prize', 30000000.00, 2, 3.20, 75),
+(6, 3, 'VCS Second Prize', 15000000.00, 5, 3.20, 75),
+(7, 4, 'Chu Van An Gold Medal', 25000000.00, 5, 3.50, 80),
+(8, 4, 'Chu Van An Silver Medal', 15000000.00, 10, 3.50, 80);
 
 -- --------------------------------------------------------
 

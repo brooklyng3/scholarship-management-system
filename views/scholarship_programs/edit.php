@@ -18,6 +18,23 @@ $existingCriteria = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 $weightGpa      = isset($existingCriteria['Điểm Trung bình Tích lũy (GPA)']) ? (float)$existingCriteria['Điểm Trung bình Tích lũy (GPA)'] : 40.00;
 $weightTraining = isset($existingCriteria['Điểm Rèn luyện']) ? (float)$existingCriteria['Điểm Rèn luyện'] : 30.00;
 $weightProof    = isset($existingCriteria['Thành tích Ngoại khóa / Minh chứng (Upload)']) ? (float)$existingCriteria['Thành tích Ngoại khóa / Minh chứng (Upload)'] : 30.00;
+
+// Fetch existing tiers for this program
+$stmtTiers = $db->prepare("SELECT * FROM scholarship_tiers WHERE program_id = ? ORDER BY tier_name ASC");
+$stmtTiers->execute([$program['id']]);
+$existingTiers = $stmtTiers->fetchAll(PDO::FETCH_ASSOC);
+
+// Map tiers: Excellence Tier and Standard Tier
+$tier1 = ['min_gpa' => 3.50, 'min_training_score' => 85, 'reward_amount' => 15000000.00, 'quota' => 10];
+$tier2 = ['reward_amount' => 5000000.00, 'quota' => 50];
+
+foreach ($existingTiers as $tier) {
+    if (stripos($tier['tier_name'], 'Excellence') !== false) {
+        $tier1 = $tier;
+    } elseif (stripos($tier['tier_name'], 'Standard') !== false) {
+        $tier2 = $tier;
+    }
+}
 ?>
 
 <nav aria-label="breadcrumb" class="mb-3">
@@ -130,6 +147,67 @@ $weightProof    = isset($existingCriteria['Thành tích Ngoại khóa / Minh ch�
                 <div class="mt-3 pt-2 border-top text-end small">
                     <span class="text-muted">Running Balance Total:</span> 
                     <strong id="edit-weight-total" class="text-success">100.00%</strong>
+                </div>
+            </div>
+
+            <!-- NEW: 2-Tier Automated Architecture Configuration -->
+            <div class="bg-light p-3 rounded mb-3 border border-primary">
+                <h6 class="text-primary mb-3">🎯 2-Tier Automated Architecture</h6>
+                <p class="small text-muted mb-3">Students will be automatically sorted into Excellence Tier or Standard Tier based on their GPA and Training Score.</p>
+                
+                <!-- Tier 1: Excellence Tier -->
+                <div class="card mb-3">
+                    <div class="card-header bg-warning text-dark">
+                        <strong>⭐ Tier 1: Excellence Tier</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label small">Minimum GPA <span class="text-danger">*</span></label>
+                                <input type="number" name="tier1_min_gpa" class="form-control form-control-sm" 
+                                       step="0.01" min="0.00" max="4.00" value="<?= e(number_format($tier1['min_gpa'] ?? 3.50, 2)) ?>" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Min Training Score <span class="text-danger">*</span></label>
+                                <input type="number" name="tier1_min_training_score" class="form-control form-control-sm" 
+                                       step="1" min="0" max="100" value="<?= e($tier1['min_training_score'] ?? 85) ?>" required>
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label small">Reward Amount <span class="text-danger">*</span></label>
+                                <input type="number" name="tier1_reward_amount" class="form-control form-control-sm" 
+                                       step="0.01" min="0" value="<?= e(number_format($tier1['reward_amount'] ?? 15000000.00, 2, '.', '')) ?>" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Quota <span class="text-danger">*</span></label>
+                                <input type="number" name="tier1_quota" class="form-control form-control-sm" 
+                                       step="1" min="1" value="<?= e($tier1['quota'] ?? 10) ?>" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tier 2: Standard Tier -->
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <strong>📋 Tier 2: Standard Tier</strong>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted mb-2"><em>Inherits program entry requirements (min_gpa and min_training_score above)</em></p>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label small">Reward Amount <span class="text-danger">*</span></label>
+                                <input type="number" name="tier2_reward_amount" class="form-control form-control-sm" 
+                                       step="0.01" min="0" value="<?= e(number_format($tier2['reward_amount'] ?? 5000000.00, 2, '.', '')) ?>" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Quota <span class="text-danger">*</span></label>
+                                <input type="number" name="tier2_quota" class="form-control form-control-sm" 
+                                       step="1" min="1" value="<?= e($tier2['quota'] ?? 50) ?>" required>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -62,15 +62,14 @@ $isStudent = ($currentUser['role'] === 'student');
             </div>
 
             <div class="mb-3">
-                <label for="tier_id" class="form-label">Scholarship Tier <span class="text-danger">*</span></label>
-                <select name="tier_id" id="tier_id" class="form-select" required>
-                    <?php foreach ($tiers as $tier): ?>
-                        <option value="<?= htmlspecialchars($tier['id']) ?>" 
-                                <?= ($application['tier_id'] == $tier['id']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($tier['tier_name']) ?> - <?= htmlspecialchars($tier['program_title']) ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
+                <label class="form-label">Assigned Scholarship Tier</label>
+                <div class="alert alert-info">
+                    <strong><?= htmlspecialchars($tierInfo['tier_name'] ?? 'Unknown') ?></strong><br>
+                    <small class="text-muted">
+                        Program: <?= htmlspecialchars($tierInfo['program_title'] ?? 'N/A') ?><br>
+                        <em>🔒 Tier assignment was automatically determined based on your GPA and Training Score and cannot be changed.</em>
+                    </small>
+                </div>
             </div>
 
             <div class="mb-3">

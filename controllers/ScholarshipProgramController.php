@@ -104,7 +104,28 @@ class ScholarshipProgramController
             $errors[] = 'Minimum GPA threshold must fall between 0.00 and 4.00.';
         }
 
-        // 3. Process database transactional commits if validation passes
+        // 3. Fetch tier configuration data
+        $tier1Data = [
+            'min_gpa'            => isset($_POST['tier1_min_gpa']) ? (float)$_POST['tier1_min_gpa'] : 3.50,
+            'min_training_score' => isset($_POST['tier1_min_training_score']) ? (int)$_POST['tier1_min_training_score'] : 85,
+            'reward_amount'      => isset($_POST['tier1_reward_amount']) ? (float)$_POST['tier1_reward_amount'] : 15000000.00,
+            'quota'              => isset($_POST['tier1_quota']) ? (int)$_POST['tier1_quota'] : 10,
+        ];
+
+        $tier2Data = [
+            'reward_amount' => isset($_POST['tier2_reward_amount']) ? (float)$_POST['tier2_reward_amount'] : 5000000.00,
+            'quota'         => isset($_POST['tier2_quota']) ? (int)$_POST['tier2_quota'] : 50,
+        ];
+
+        // Validate tier thresholds
+        if ($tier1Data['min_gpa'] < $data['min_gpa']) {
+            $errors[] = 'Excellence Tier minimum GPA must be equal to or higher than program entry requirement.';
+        }
+        if ($tier1Data['min_training_score'] < $data['min_training_score']) {
+            $errors[] = 'Excellence Tier minimum training score must be equal to or higher than program entry requirement.';
+        }
+
+        // 4. Process database transactional commits if validation passes
         if (empty($errors)) {
             if ($this->model->create($data)) {
                 $db = Database::getConnection();
@@ -134,7 +155,35 @@ class ScholarshipProgramController
                     'weight'        => $weightProof
                 ]);
 
-                set_flash('success', 'Scholarship program built with normalized evaluation criteria profiles.');
+                // AUTO-CREATE TIER 1: Excellence Tier
+                $stmtTier1 = $db->prepare("
+                    INSERT INTO scholarship_tiers 
+                    (program_id, tier_name, reward_amount, quota, min_gpa, min_training_score) 
+                    VALUES (?, 'Excellence Tier', ?, ?, ?, ?)
+                ");
+                $stmtTier1->execute([
+                    $newProgramId,
+                    $tier1Data['reward_amount'],
+                    $tier1Data['quota'],
+                    $tier1Data['min_gpa'],
+                    $tier1Data['min_training_score']
+                ]);
+
+                // AUTO-CREATE TIER 2: Standard Tier (inherits program min requirements)
+                $stmtTier2 = $db->prepare("
+                    INSERT INTO scholarship_tiers 
+                    (program_id, tier_name, reward_amount, quota, min_gpa, min_training_score) 
+                    VALUES (?, 'Standard Tier', ?, ?, ?, ?)
+                ");
+                $stmtTier2->execute([
+                    $newProgramId,
+                    $tier2Data['reward_amount'],
+                    $tier2Data['quota'],
+                    $data['min_gpa'],
+                    $data['min_training_score']
+                ]);
+
+                set_flash('success', 'Scholarship program created with 2-tier automated architecture.');
                 redirect(url('scholarship_programs', 'index'));
             }
             $errors[] = 'Database handling error encountered while saving structures.';
@@ -203,7 +252,28 @@ class ScholarshipProgramController
             $errors[] = 'Minimum GPA threshold must fall between 0.00 and 4.00.';
         }
 
-        // 3. If validation succeeds, commit updates to both tables
+        // 3. Fetch tier configuration data
+        $tier1Data = [
+            'min_gpa'            => isset($_POST['tier1_min_gpa']) ? (float)$_POST['tier1_min_gpa'] : 3.50,
+            'min_training_score' => isset($_POST['tier1_min_training_score']) ? (int)$_POST['tier1_min_training_score'] : 85,
+            'reward_amount'      => isset($_POST['tier1_reward_amount']) ? (float)$_POST['tier1_reward_amount'] : 15000000.00,
+            'quota'              => isset($_POST['tier1_quota']) ? (int)$_POST['tier1_quota'] : 10,
+        ];
+
+        $tier2Data = [
+            'reward_amount' => isset($_POST['tier2_reward_amount']) ? (float)$_POST['tier2_reward_amount'] : 5000000.00,
+            'quota'         => isset($_POST['tier2_quota']) ? (int)$_POST['tier2_quota'] : 50,
+        ];
+
+        // Validate tier thresholds
+        if ($tier1Data['min_gpa'] < $data['min_gpa']) {
+            $errors[] = 'Excellence Tier minimum GPA must be equal to or higher than program entry requirement.';
+        }
+        if ($tier1Data['min_training_score'] < $data['min_training_score']) {
+            $errors[] = 'Excellence Tier minimum training score must be equal to or higher than program entry requirement.';
+        }
+
+        // 4. If validation succeeds, commit updates to both tables
         if (empty($errors)) {
             // Update core scholarship program fields
             if ($this->model->update($id, $data)) {
@@ -216,7 +286,73 @@ class ScholarshipProgramController
                 $updateWeightStmt->execute([$weightTraining, $id, 'Điểm Rèn luyện']);
                 $updateWeightStmt->execute([$weightProof, $id, 'Thành tích Ngoại khóa / Minh chứng (Upload)']);
 
-                set_flash('success', 'Scholarship program and scoring configurations updated successfully.');
+                // UPDATE OR CREATE Excellence Tier
+                $stmtCheckTier1 = $db->prepare("SELECT id FROM scholarship_tiers WHERE program_id = ? AND tier_name = 'Excellence Tier'");
+                $stmtCheckTier1->execute([$id]);
+                $existingTier1 = $stmtCheckTier1->fetch(PDO::FETCH_ASSOC);
+
+                if ($existingTier1) {
+                    $stmtUpdateTier1 = $db->prepare("
+                        UPDATE scholarship_tiers 
+                        SET reward_amount = ?, quota = ?, min_gpa = ?, min_training_score = ? 
+                        WHERE id = ?
+                    ");
+                    $stmtUpdateTier1->execute([
+                        $tier1Data['reward_amount'],
+                        $tier1Data['quota'],
+                        $tier1Data['min_gpa'],
+                        $tier1Data['min_training_score'],
+                        $existingTier1['id']
+                    ]);
+                } else {
+                    $stmtInsertTier1 = $db->prepare("
+                        INSERT INTO scholarship_tiers 
+                        (program_id, tier_name, reward_amount, quota, min_gpa, min_training_score) 
+                        VALUES (?, 'Excellence Tier', ?, ?, ?, ?)
+                    ");
+                    $stmtInsertTier1->execute([
+                        $id,
+                        $tier1Data['reward_amount'],
+                        $tier1Data['quota'],
+                        $tier1Data['min_gpa'],
+                        $tier1Data['min_training_score']
+                    ]);
+                }
+
+                // UPDATE OR CREATE Standard Tier
+                $stmtCheckTier2 = $db->prepare("SELECT id FROM scholarship_tiers WHERE program_id = ? AND tier_name = 'Standard Tier'");
+                $stmtCheckTier2->execute([$id]);
+                $existingTier2 = $stmtCheckTier2->fetch(PDO::FETCH_ASSOC);
+
+                if ($existingTier2) {
+                    $stmtUpdateTier2 = $db->prepare("
+                        UPDATE scholarship_tiers 
+                        SET reward_amount = ?, quota = ?, min_gpa = ?, min_training_score = ? 
+                        WHERE id = ?
+                    ");
+                    $stmtUpdateTier2->execute([
+                        $tier2Data['reward_amount'],
+                        $tier2Data['quota'],
+                        $data['min_gpa'],
+                        $data['min_training_score'],
+                        $existingTier2['id']
+                    ]);
+                } else {
+                    $stmtInsertTier2 = $db->prepare("
+                        INSERT INTO scholarship_tiers 
+                        (program_id, tier_name, reward_amount, quota, min_gpa, min_training_score) 
+                        VALUES (?, 'Standard Tier', ?, ?, ?, ?)
+                    ");
+                    $stmtInsertTier2->execute([
+                        $id,
+                        $tier2Data['reward_amount'],
+                        $tier2Data['quota'],
+                        $data['min_gpa'],
+                        $data['min_training_score']
+                    ]);
+                }
+
+                set_flash('success', 'Scholarship program and 2-tier configuration updated successfully.');
                 redirect(url('scholarship_programs', 'index'));
             }
             $errors[] = 'An error occurred while saving modifications to the database.';

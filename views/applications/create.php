@@ -1,7 +1,7 @@
 <?php
 /**
  * @var array $students List of all students
- * @var array $tiers List of all scholarship tiers
+ * @var array $programs List of all scholarship programs
  * @var array $errors List of validation errors
  * @var array $old Previous form data
  */
@@ -38,7 +38,7 @@ $isStudent = ($currentUser['role'] === 'student');
         <form method="POST" action="index.php?controller=applications&action=store" id="applicationForm" enctype="multipart/form-data">
             <div class="mb-3">
                 <label for="user_id" class="form-label">Student <span class="text-danger">*</span></label>
-                <select name="user_id" id="user_id" class="form-select" required>
+                <select name="user_id" id="user_id" class="form-select" required <?= $isStudent ? 'disabled' : '' ?>>
                     <option value="">-- Select Student --</option>
                     <?php foreach ($students as $student): ?>
                         <option value="<?= htmlspecialchars($student['id']) ?>" 
@@ -47,19 +47,26 @@ $isStudent = ($currentUser['role'] === 'student');
                         </option>
                     <?php endforeach; ?>
                 </select>
+                <?php if ($isStudent): ?>
+                    <input type="hidden" name="user_id" value="<?= $currentUser['id'] ?>">
+                <?php endif; ?>
             </div>
 
             <div class="mb-3">
-                <label for="tier_id" class="form-label">Scholarship Tier <span class="text-danger">*</span></label>
-                <select name="tier_id" id="tier_id" class="form-select" required>
-                    <option value="">-- Select Tier --</option>
-                    <?php foreach ($tiers as $tier): ?>
-                        <option value="<?= htmlspecialchars($tier['id']) ?>" 
-                                <?= (isset($old['tier_id']) && $old['tier_id'] == $tier['id']) ? 'selected' : '' ?>>
-                            <?= htmlspecialchars($tier['tier_name']) ?> - <?= htmlspecialchars($tier['program_title']) ?>
+                <label for="program_id" class="form-label">Scholarship Program <span class="text-danger">*</span></label>
+                <select name="program_id" id="program_id" class="form-select" required>
+                    <option value="">-- Select Program --</option>
+                    <?php foreach ($programs as $program): ?>
+                        <option value="<?= htmlspecialchars($program['id']) ?>" 
+                                <?= (isset($old['program_id']) && $old['program_id'] == $program['id']) ? 'selected' : '' ?>>
+                            <?= htmlspecialchars($program['title']) ?>
                         </option>
                     <?php endforeach; ?>
                 </select>
+                <div class="form-text">
+                    <span class="badge bg-info text-dark">🎯 Auto-Sorting Enabled</span>
+                    You will be automatically assigned to Excellence Tier or Standard Tier based on your GPA and Training Score.
+                </div>
             </div>
 
             <div class="mb-3">
@@ -68,22 +75,8 @@ $isStudent = ($currentUser['role'] === 'student');
                 <div class="form-text">Upload supporting document (PDF, JPG, PNG, max 5MB)</div>
             </div>
 
-            <?php if ($isStudent): ?>
-                <input type="hidden" name="status" value="pending">
-            <?php else: ?>
-                <div class="mb-3">
-                    <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                    <select name="status" id="status" class="form-select" required>
-                        <option value="pending" <?= (!isset($old['status']) || $old['status'] === 'pending') ? 'selected' : '' ?>>Pending</option>
-                        <option value="reviewing" <?= (isset($old['status']) && $old['status'] === 'reviewing') ? 'selected' : '' ?>>Reviewing</option>
-                        <option value="approved" <?= (isset($old['status']) && $old['status'] === 'approved') ? 'selected' : '' ?>>Approved</option>
-                        <option value="rejected" <?= (isset($old['status']) && $old['status'] === 'rejected') ? 'selected' : '' ?>>Rejected</option>
-                    </select>
-                </div>
-            <?php endif; ?>
-
             <div class="d-flex gap-2 mt-4">
-                <button type="submit" class="btn btn-primary">Save Application</button>
+                <button type="submit" class="btn btn-primary">Submit Application</button>
                 <a href="index.php?controller=applications&action=index" class="btn btn-outline-secondary">Cancel</a>
             </div>
         </form>
@@ -93,19 +86,12 @@ $isStudent = ($currentUser['role'] === 'student');
 <script>
 document.getElementById('applicationForm').addEventListener('submit', function(e) {
     const userId = document.getElementById('user_id').value;
-    const tierId = document.getElementById('tier_id').value;
-    const statusField = document.getElementById('status');
+    const programId = document.getElementById('program_id').value;
     const fileInput = document.getElementById('proof_document');
     
-    if (!userId || !tierId) {
+    if (!userId || !programId) {
         e.preventDefault();
         alert('Please fill out all required fields.');
-        return false;
-    }
-    
-    if (statusField && !statusField.value) {
-        e.preventDefault();
-        alert('Please select a status.');
         return false;
     }
     

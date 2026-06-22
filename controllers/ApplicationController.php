@@ -85,9 +85,8 @@ class ApplicationController
             $students = $this->model->getAllStudents();
         }
         
-        // FIX: Pass the $isStudent flag. 
-        // Students only see 'open' programs, Admins/Reviewers can see all for management.
-        $tiers = $this->model->getAllTiers($isStudent); 
+        // FIX: Now fetch programs instead of tiers for selection
+        $programs = $this->model->getAllPrograms($isStudent);
         
         $errors = [];
         $old = [];
@@ -105,38 +104,79 @@ class ApplicationController
         $currentUser = current_user();
         $isStudent = ($currentUser['role'] === 'student');
         
-        // Read and sanitize input
-        $data = [
-            'user_id' => $isStudent ? (int)$currentUser['id'] : (int)($_POST['user_id'] ?? 0), // Force student's own ID
-            'tier_id' => (int)($_POST['tier_id'] ?? 0),
-            'status' => $isStudent ? 'pending' : trim($_POST['status'] ?? 'pending'), // Students can only create pending applications
-        ];
+        // Read and sanitize input - now using program_id instead of tier_id
+        $programId = (int)($_POST['program_id'] ?? 0);
+        $userId = $isStudent ? (int)$currentUser['id'] : (int)($_POST['user_id'] ?? 0);
 
         // Validate required fields
         $errors = [];
         
-        if ($data['user_id'] === 0) {
+        if ($userId === 0) {
             $errors[] = "Student is required.";
         }
         
-        if ($data['tier_id'] === 0) {
-            $errors[] = "Scholarship tier is required.";
+        if ($programId === 0) {
+            $errors[] = "Scholarship program is required.";
         }
-        
-        // Validate status
-        $validStatuses = ['pending', 'reviewing', 'approved', 'rejected'];
-        if (!in_array($data['status'], $validStatuses, true)) {
-            $errors[] = "Status must be one of: pending, reviewing, approved, rejected.";
+
+        // Fetch student profile metrics
+        $studentProfile = null;
+        if (empty($errors)) {
+            $studentProfile = $this->model->getStudentProfile($userId);
+            if (!$studentProfile) {
+                $errors[] = "Student profile not found.";
+            }
+        }
+
+        // Fetch program entry requirements
+        $program = null;
+        if (empty($errors)) {
+            $program = $this->model->getProgramById($programId);
+            if (!$program) {
+                $errors[] = "Scholarship program not found.";
+            }
+        }
+
+        // AUTO-ROUTING LOGIC: Check eligibility and assign tier
+        $assignedTierId = null;
+        if (empty($errors)) {
+            $studentGpa = (float)$studentProfile['current_gpa'];
+            $studentTraining = (int)$studentProfile['training_score'];
+            $programMinGpa = (float)$program['min_gpa'];
+            $programMinTraining = (int)$program['min_training_score'];
+
+            // First check: Does student meet program entry requirements?
+            if ($studentGpa < $programMinGpa || $studentTraining < $programMinTraining) {
+                $errors[] = "You do not meet the minimum requirements for this program. Required: GPA {$programMinGpa}, Training Score {$programMinTraining}. Your metrics: GPA {$studentGpa}, Training Score {$studentTraining}.";
+            } else {
+                // Fetch both tiers for this program
+                $tiers = $this->model->getTiersByProgramId($programId);
+                
+                if (count($tiers) < 2) {
+                    $errors[] = "Program tier configuration is incomplete.";
+                } else {
+                    // Sort to ensure Excellence Tier comes first
+                    usort($tiers, function($a, $b) {
+                        return $b['min_gpa'] <=> $a['min_gpa']; // Descending order
+                    });
+
+                    $excellenceTier = $tiers[0];
+                    $standardTier = $tiers[1];
+
+                    // Check if student qualifies for Excellence Tier
+                    if ($studentGpa >= (float)$excellenceTier['min_gpa'] && 
+                        $studentTraining >= (int)$excellenceTier['min_training_score']) {
+                        $assignedTierId = (int)$excellenceTier['id'];
+                    } else {
+                        $assignedTierId = (int)$standardTier['id'];
+                    }
+                }
+            }
         }
 
         // Check for duplicate application
-        if (empty($errors) && $this->model->hasApplied($data['user_id'], $data['tier_id'])) {
-            $errors[] = "This student has already applied to this scholarship tier.";
-        }
-
-        // FIX: Backend defense check against tampering parameter manipulation
-        if (empty($errors) && !$this->model->isTierAvailable($data['tier_id'])) {
-            $errors[] = "The selected scholarship program is currently draft or unavailable.";
+        if (empty($errors) && $this->model->hasApplied($userId, $assignedTierId)) {
+            $errors[] = "You have already applied to this scholarship tier.";
         }
 
         // Validate file upload
@@ -177,13 +217,19 @@ class ApplicationController
             } else {
                 $students = $this->model->getAllStudents();
             }
-            $tiers = $this->model->getAllTiers();
-            $old = $data;
+            $programs = $this->model->getAllPrograms();
+            $old = ['user_id' => $userId, 'program_id' => $programId];
             require __DIR__ . '/../views/applications/create.php';
             return;
         }
 
-        // Save application
+        // Save application with auto-assigned tier
+        $data = [
+            'user_id' => $userId,
+            'tier_id' => $assignedTierId,
+            'status' => $isStudent ? 'pending' : 'pending',
+        ];
+
         $applicationId = $this->model->create($data);
         
         if (!$applicationId) {
@@ -232,7 +278,7 @@ class ApplicationController
             exit;
         }
         
-        set_flash('success', 'Application created successfully with supporting document.');
+        set_flash('success', 'Application created successfully and automatically assigned to appropriate tier.');
         header("Location: index.php?controller=applications&action=index");
         exit;
     }
@@ -268,7 +314,9 @@ class ApplicationController
         }
         
         $students = $this->model->getAllStudents();
-        $tiers = $this->model->getAllTiers();
+        
+        // Fetch tier info for display (not for changing)
+        $tierInfo = $this->model->getTierInfoById((int)$application['tier_id']);
         
         // RELATIONAL LAYER BINDING: Query document metadata array for presentation view
         $documents = $this->documentModel->getByApplicationId($id);
@@ -311,9 +359,10 @@ class ApplicationController
         }
         
         // Read and sanitize input
+        // NOTE: tier_id is PRESERVED from original application (no changes allowed)
         $data = [
             'user_id' => $isStudent ? (int)$application['user_id'] : (int)($_POST['user_id'] ?? 0), 
-            'tier_id' => (int)($_POST['tier_id'] ?? 0),
+            'tier_id' => (int)$application['tier_id'], // LOCKED: Preserve original auto-assigned tier
             'status' => $isStudent ? $application['status'] : trim($_POST['status'] ?? 'pending'), 
         ];
 
@@ -325,7 +374,7 @@ class ApplicationController
         }
         
         if ($data['tier_id'] === 0) {
-            $errors[] = "Scholarship tier is required.";
+            $errors[] = "Invalid tier assignment.";
         }
         
         // Validate status

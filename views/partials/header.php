@@ -38,7 +38,6 @@ $pageTitle = $pageTitle ?? 'System & Users';
                             <li class="nav-item"><a class="nav-link" href="<?= e(url('users', 'index')) ?>">Users</a></li>
                         <?php endif; ?>
                         
-                        <li class="nav-item"><a class="nav-link" href="<?= e(url('scholarship_tiers', 'index')) ?>">Tiers</a></li>
                         <li class="nav-item"><a class="nav-link" href="<?= e(url('applications', 'index')) ?>">Applications</a></li>
                         <?php else: ?>
                         <li class="nav-item"><a class="nav-link" href="<?= e(url('student_profiles', 'edit', ['id' => current_user()['id']])) ?>">My Profile</a></li>

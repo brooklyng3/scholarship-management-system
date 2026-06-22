@@ -165,46 +165,99 @@ class ApplicationModel
     }
 
     /**
-     * Get scholarship tiers with optional status filtering
-     * @param bool $onlyOpen If true, only returns tiers from open programs
+     * Get all scholarship programs with optional status filtering
+     * @param bool $onlyOpen If true, only returns active programs
      * @return array
      */
-    public function getAllTiers(bool $onlyOpen = false): array
+    public function getAllPrograms(bool $onlyOpen = false): array
     {
         $sql = "
             SELECT 
-                st.id, 
-                st.tier_name,
-                sp.title as program_title
-            FROM scholarship_tiers st
-            INNER JOIN scholarship_programs sp ON st.program_id = sp.id
+                sp.id, 
+                sp.title,
+                sp.min_gpa,
+                sp.min_training_score
+            FROM scholarship_programs sp
         ";
         
-        // Enforce the 'open' status filter if requested
         if ($onlyOpen) {
             $sql .= " WHERE sp.status = 'active' ";
         }
         
-        $sql .= " ORDER BY sp.title, st.tier_name";
+        $sql .= " ORDER BY sp.title";
         
         return $this->pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /**
-     * Verify if a specific tier belongs to an active/open program
-     * @param int $tierId
-     * @return bool
+     * Get program by ID
+     * @param int $programId
+     * @return array|false
      */
-    public function isTierAvailable(int $tierId): bool
+    public function getProgramById(int $programId): array|false
     {
         $stmt = $this->pdo->prepare("
-            SELECT COUNT(*) 
+            SELECT id, title, min_gpa, min_training_score, status 
+            FROM scholarship_programs 
+            WHERE id = ?
+        ");
+        $stmt->execute([$programId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get tiers for a specific program
+     * @param int $programId
+     * @return array
+     */
+    public function getTiersByProgramId(int $programId): array
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT id, tier_name, min_gpa, min_training_score, reward_amount, quota
+            FROM scholarship_tiers
+            WHERE program_id = ?
+            ORDER BY min_gpa DESC
+        ");
+        $stmt->execute([$programId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get student profile with metrics
+     * @param int $userId
+     * @return array|false
+     */
+    public function getStudentProfile(int $userId): array|false
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT id, user_id, current_gpa, training_score, major, accumulated_credits
+            FROM student_profiles
+            WHERE user_id = ?
+        ");
+        $stmt->execute([$userId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Get tier information by tier ID
+     * @param int $tierId
+     * @return array|false
+     */
+    public function getTierInfoById(int $tierId): array|false
+    {
+        $stmt = $this->pdo->prepare("
+            SELECT 
+                st.id,
+                st.tier_name,
+                st.reward_amount,
+                sp.title as program_title,
+                sp.id as program_id
             FROM scholarship_tiers st
             INNER JOIN scholarship_programs sp ON st.program_id = sp.id
-            WHERE st.id = ? AND sp.status = 'active'
+            WHERE st.id = ?
         ");
         $stmt->execute([$tierId]);
-        return (int)$stmt->fetchColumn() > 0;
+        return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
     /**

@@ -128,6 +128,67 @@ require_once __DIR__ . '/../partials/header.php';
                 </div>
             </div>
 
+            <!-- NEW: 2-Tier Automated Architecture Configuration -->
+            <div class="bg-light p-3 rounded mb-3 border border-primary">
+                <h6 class="text-primary mb-3">🎯 2-Tier Automated Architecture</h6>
+                <p class="small text-muted mb-3">Students will be automatically sorted into Excellence Tier or Standard Tier based on their GPA and Training Score.</p>
+                
+                <!-- Tier 1: Excellence Tier -->
+                <div class="card mb-3">
+                    <div class="card-header bg-warning text-dark">
+                        <strong>⭐ Tier 1: Excellence Tier</strong>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-2">
+                            <div class="col-md-6">
+                                <label class="form-label small">Minimum GPA <span class="text-danger">*</span></label>
+                                <input type="number" name="tier1_min_gpa" class="form-control form-control-sm" 
+                                       step="0.01" min="0.00" max="4.00" value="3.50" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Min Training Score <span class="text-danger">*</span></label>
+                                <input type="number" name="tier1_min_training_score" class="form-control form-control-sm" 
+                                       step="1" min="0" max="100" value="85" required>
+                            </div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label small">Reward Amount <span class="text-danger">*</span></label>
+                                <input type="number" name="tier1_reward_amount" class="form-control form-control-sm" 
+                                       step="0.01" min="0" value="15000000.00" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Quota <span class="text-danger">*</span></label>
+                                <input type="number" name="tier1_quota" class="form-control form-control-sm" 
+                                       step="1" min="1" value="10" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tier 2: Standard Tier -->
+                <div class="card">
+                    <div class="card-header bg-info text-white">
+                        <strong>📋 Tier 2: Standard Tier</strong>
+                    </div>
+                    <div class="card-body">
+                        <p class="small text-muted mb-2"><em>Inherits program entry requirements (min_gpa and min_training_score above)</em></p>
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label small">Reward Amount <span class="text-danger">*</span></label>
+                                <input type="number" name="tier2_reward_amount" class="form-control form-control-sm" 
+                                       step="0.01" min="0" value="5000000.00" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Quota <span class="text-danger">*</span></label>
+                                <input type="number" name="tier2_quota" class="form-control form-control-sm" 
+                                       step="1" min="1" value="50" required>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <script>
             function calculateFixedTotal() {
                 const gpa = parseFloat(document.getElementById('weight_gpa').value || 0);
