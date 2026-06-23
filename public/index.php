@@ -60,8 +60,7 @@ $controller = new $controllerClass();
 
 // Map URL action to Controller method
 // Add 'show' to the array
-$allowedActions = ['index', 'show', 'create', 'store', 'edit', 'update', 'delete', 'login', 'doLogin', 'logout', 'export', 'review', 'submitReview', 'exportCsv', 'exportHtml','view'];// 'login'/'doLogin'/'logout' -> AuthController, 'export' -> CSV export (violation_records) [NEW], 'review'/'submitReview' -> ApplicationController, 'exportCsv'/'exportHtml' -> DashboardController
-
+$allowedActions = ['index', 'show', 'create', 'store', 'edit', 'update', 'delete', 'login', 'doLogin', 'logout', 'export', 'review', 'submitReview', 'exportCsv', 'exportHtml', 'view', 'student', 'reviewer'];
 if (in_array($action, $allowedActions) && method_exists($controller, $action)) {
     $controller->$action();
 } else {

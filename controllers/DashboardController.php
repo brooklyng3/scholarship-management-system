@@ -18,7 +18,7 @@ class DashboardController
     }
 
     /**
-     * Display the dashboard with all metrics
+     * Display the dashboard with all metrics (Dành cho Admin/Staff - Của Leader)
      */
     public function index(): void
     {
@@ -33,6 +33,77 @@ class DashboardController
         require_once __DIR__ . '/../views/dashboard/index.php';
     }
 
+    /**
+     * [NEW] Hiển thị Student Portal
+     */
+    public function student(): void
+    {
+        require_role(['student']); 
+
+        $userId = $_SESSION['user']['id'];
+        $student_name = $_SESSION['user']['full_name'] ?? 'Student';
+        
+        $count_pending = 0;
+        $count_evaluating = 0;
+        $count_awarded = 0;
+
+        // Nhờ Model lặn xuống Database lấy số liệu của đúng user này
+        $stats = $this->model->getStudentStats($userId);
+        
+        if ($stats) {
+            foreach ($stats as $row) {
+                // Ép về chữ thường hết để so sánh cho chuẩn xác
+                $status = strtolower($row['status']);
+                $total = (int)$row['total'];
+
+                if (in_array($status, ['pending', 'draft'])) {
+                    $count_pending += $total;
+                } elseif (in_array($status, ['under evaluation', 'reviewing'])) {
+                    $count_evaluating += $total;
+                } elseif ($status === 'approved') {
+                    $count_awarded += $total;
+                }
+            }
+        }
+
+        // Đẩy toàn bộ biến dữ liệu xuống cho file View hiển thị
+        require_once __DIR__ . '/../views/partials/dashboard/student.php';
+    }
+
+    /**
+     * [NEW] Hiển thị Reviewer Task Board
+     */
+    public function reviewer(): void
+    {
+        require_role(['reviewer']); 
+
+        $reviewer_name = $_SESSION['user']['full_name'] ?? 'Reviewer';
+        
+        $count_to_review = 0;
+        $count_reviewed = 0;
+
+        // Gọi Model đi lấy số liệu thống kê
+        $stats = $this->model->getReviewerStats();
+        
+        if ($stats) {
+            foreach ($stats as $row) {
+                $status = strtolower($row['status']);
+                $total = (int)$row['total'];
+
+                // Gom các trạng thái cần xử lý vào cột "To Review"
+                if (in_array($status, ['under evaluation', 'reviewing', 'pending'])) {
+                    $count_to_review += $total;
+                } 
+                // Gom các trạng thái đã chốt vào cột "Reviewed"
+                elseif (in_array($status, ['approved', 'rejected'])) {
+                    $count_reviewed += $total;
+                }
+            }
+        }
+
+        // Gọi file View
+        require_once __DIR__ . '/../views/partials/dashboard/reviewer.php';
+    }
     /**
      * Export dashboard data to CSV format
      */

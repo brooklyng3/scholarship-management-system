@@ -28,9 +28,18 @@ class AuthController
         if ($user) {
             $_SESSION['user'] = $user;
             set_flash('success', 'Login successful. Welcome ' . $user['full_name'] . '!');
-            redirect(url('scholarship_programs', 'index'));
+
+            if ($user['role'] === 'admin') {
+                redirect(url('dashboard', 'index')); 
+            } elseif ($user['role'] === 'reviewer') {
+                redirect(url('dashboard', 'reviewer')); 
+            } else {
+                redirect(url('dashboard', 'student')); 
+            }
+            exit; // Đảm bảo dừng thực thi sau khi chuyển hướng
         }
 
+        // Dòng số 45 từng bị lỗi giờ đã nằm ngoan ngoãn BÊN TRONG hàm doLogin()
         $this->render('auth/login', ['errors' => ['Email or password is incorrect.']]);
     }
 

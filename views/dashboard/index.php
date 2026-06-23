@@ -1,171 +1,171 @@
 <?php
 /**
- * Dashboard Index View
- * Displays statistical metrics with Chart.js visualizations
- * @var array $approvalRate
- * @var array $utilizationRate
- * @var array $topResources
- * @var array $peakSubmissions
- * @var array $recentActivity
+ * [RE-DESIGNED] Dashboard Index View
  */
-require_once __DIR__ . '/../partials/header.php';
+require_once __DIR__ . '/../partials/header.php'; // Đã có Sidebar xịn
 ?>
 
-<div class="container-fluid mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Dashboard</h1>
+<div class="container-fluid">
+    <div class="page-header mb-4 d-flex justify-content-between align-items-center">
         <div>
-            <a href="<?= e(url('dashboard', 'exportCsv')) ?>" class="btn btn-success">
-                <i class="bi bi-file-earmark-spreadsheet"></i> Export to CSV
+            <h1 class="h3 fw-bold text-dark">System Admin Dashboard</h1>
+            <p class="text-muted">Overview of system performance and scholarship activities.</p>
+        </div>
+        <div>
+            <a href="<?= e(url('dashboard', 'exportCsv')) ?>" class="btn btn-outline-success me-2">
+                <i class="fa-solid fa-file-excel"></i> Export CSV
             </a>
-            <a href="<?= e(url('dashboard', 'exportHtml')) ?>" class="btn btn-info text-white">
-                <i class="bi bi-file-earmark-code"></i> Export to HTML
+            <a href="<?= e(url('dashboard', 'exportHtml')) ?>" class="btn btn-outline-primary">
+                <i class="fa-solid fa-code"></i> Export HTML
             </a>
         </div>
     </div>
 
-    <!-- Key Statistics Cards -->
     <div class="row mb-4">
         <div class="col-md-3">
-            <div class="card text-white bg-primary">
-                <div class="card-body">
-                    <h6 class="card-title">Total Applications</h6>
-                    <h2 class="mb-0"><?= e($approvalRate['total']) ?></h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-success">
-                <div class="card-body">
-                    <h6 class="card-title">Approval Rate</h6>
-                    <h2 class="mb-0"><?= e($approvalRate['rate']) ?>%</h2>
-                    <small><?= e($approvalRate['approved']) ?> approved / <?= e($approvalRate['total']) ?> total</small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-info">
-                <div class="card-body">
-                    <h6 class="card-title">Utilization Rate</h6>
-                    <h2 class="mb-0"><?= e($utilizationRate['rate']) ?>%</h2>
-                    <small>$<?= e(number_format($utilizationRate['disbursed'], 2)) ?> / $<?= e(number_format($utilizationRate['granted'], 2)) ?></small>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card text-white bg-warning">
-                <div class="card-body">
-                    <h6 class="card-title">Pending Applications</h6>
-                    <h2 class="mb-0"><?= e($approvalRate['pending']) ?></h2>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts Row -->
-    <div class="row mb-4">
-        <!-- Approval Rate Pie Chart -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Application Status Distribution</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="approvalChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Utilization Rate Pie Chart -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Fund Utilization</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="utilizationChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mb-4">
-        <!-- Top Resources Bar Chart -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Top 5 Scholarship Programs</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="topResourcesChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Peak Submissions Line Chart -->
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Peak Submission Times</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="peakSubmissionsChart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Recent Activity Table -->
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Recent Activity</h5>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Application ID</th>
-                                    <th>Student</th>
-                                    <th>Email</th>
-                                    <th>Program</th>
-                                    <th>Status</th>
-                                    <th>Submitted At</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (empty($recentActivity)): ?>
-                                <tr>
-                                    <td colspan="6" class="text-center text-muted">No recent activity</td>
-                                </tr>
-                                <?php else: ?>
-                                    <?php foreach ($recentActivity as $activity): ?>
-                                    <tr>
-                                        <td><?= e($activity['application_id']) ?></td>
-                                        <td><?= e($activity['student_name']) ?></td>
-                                        <td><?= e($activity['student_email']) ?></td>
-                                        <td><?= e($activity['program_name']) ?></td>
-                                        <td>
-                                            <?php
-                                            $statusClass = match(strtolower($activity['status'])) {
-                                                'approved' => 'success',
-                                                'rejected' => 'danger',
-                                                'pending' => 'warning',
-                                                default => 'secondary'
-                                            };
-                                            ?>
-                                            <span class="badge bg-<?= $statusClass ?>"><?= e($activity['status']) ?></span>
-                                        </td>
-                                        <td><?= e(date('Y-m-d H:i', strtotime($activity['created_at']))) ?></td>
-                                    </tr>
-                                    <?php endforeach; ?>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+            <div class="card p-3 border-0 shadow-sm rounded-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box icon-blue me-3"><i class="fa-solid fa-folder-open"></i></div>
+                    <div>
+                        <span class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Total Apps</span>
+                        <h4 class="mb-0 fw-bold"><?= e($approvalRate['total']) ?></h4>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box icon-green me-3"><i class="fa-solid fa-chart-line"></i></div>
+                    <div>
+                        <span class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Approval Rate</span>
+                        <h4 class="mb-0 fw-bold"><?= e($approvalRate['rate']) ?>%</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box icon-orange me-3"><i class="fa-solid fa-sack-dollar"></i></div>
+                    <div>
+                        <span class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Utilization</span>
+                        <h4 class="mb-0 fw-bold"><?= e($utilizationRate['rate']) ?>%</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3 border-0 shadow-sm rounded-4">
+                <div class="d-flex align-items-center">
+                    <div class="icon-box icon-purple me-3"><i class="fa-solid fa-clock"></i></div>
+                    <div>
+                        <span class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Pending</span>
+                        <h4 class="mb-0 fw-bold"><?= e($approvalRate['pending']) ?></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .chart-card { border-radius: 16px; border: none; box-shadow: 0 4px 20px rgba(0,0,0,0.03); margin-bottom: 24px; }
+        .icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
+        .icon-blue { background: #eff6ff; color: #2563eb; }
+        .icon-green { background: #f0fdf4; color: #10b981; }
+        .icon-orange { background: #fff7ed; color: #ea580c; }
+        .icon-purple { background: #f5f3ff; color: #7c3aed; }
+        
+        .table-header {
+            background: #F7F2EB;
+        }
+
+        .table-header th {
+            color: #081F5C;
+            font-weight: 700;
+            border-bottom: 2px solid #BAD6EB;
+        }
+
+        .table-hover tbody tr:hover {
+            background-color: #F8FBFF !important;
+        }
+
+        .status-approved {
+            background-color: #198754 !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        .status-pending,
+        .status-waitlisted {
+            background-color: #FFC107 !important;
+            color: #000 !important;
+            border: none !important;
+        }
+
+        .status-reviewing {
+            background-color: #0DCAF0 !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        .status-rejected {
+            background-color: #DC3545 !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        .badge {
+            padding: 8px 12px;
+            border-radius: 8px !important;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+    </style>
+
+    <div class="row">
+        <div class="col-md-6"><div class="card chart-card"><div class="card-body"><canvas id="approvalChart"></canvas></div></div></div>
+        <div class="col-md-6"><div class="card chart-card"><div class="card-body"><canvas id="utilizationChart"></canvas></div></div></div>
+    </div>
+    <div class="row">
+        <div class="col-md-6"><div class="card chart-card"><div class="card-body"><canvas id="topResourcesChart"></canvas></div></div></div>
+        <div class="col-md-6"><div class="card chart-card"><div class="card-body"><canvas id="peakSubmissionsChart"></canvas></div></div></div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-5">
+        <div class="card-body p-4">
+            <h5 class="fw-bold mb-3">Recent Activity</h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-header">
+                        <tr><th>ID</th><th>Student</th><th>Program</th><th>Status</th><th>Submitted</th></tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($recentActivity as $activity): ?>
+                        <tr>
+                            <td>#<?= e($activity['application_id']) ?></td>
+                            <td><strong><?= e($activity['student_name']) ?></strong><br><small class="text-muted"><?= e($activity['student_email']) ?></small></td>
+                            <td><?= e($activity['program_name']) ?></td>
+                            <td>
+                                <?php
+                                $statusClass = match(strtolower($activity['status'])) {
+                                    'approved' => 'status-approved',
+                                    'pending' => 'status-pending',
+                                    'reviewing' => 'status-reviewing',
+                                    'rejected' => 'status-rejected',
+                                    default => 'bg-light text-dark'
+                                };
+                                ?>
+
+                                <span class="badge rounded-pill <?= $statusClass ?>">
+                                    <?= e($activity['status']) ?>
+                                </span>
+                            </td>
+                            <td><?= e(date('M d, H:i', strtotime($activity['created_at']))) ?></td>
+                        </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -189,7 +189,7 @@ new Chart(approvalCtx, {
         labels: ['Approved', 'Rejected', 'Pending'],
         datasets: [{
             data: [approvalData.approved, approvalData.rejected, approvalData.pending],
-            backgroundColor: ['#198754', '#dc3545', '#ffc107'],
+            backgroundColor: ['#334EAC', '#081F5C', '#BAD6EB'],
             borderWidth: 2,
             borderColor: '#fff'
         }]
@@ -225,9 +225,9 @@ new Chart(utilizationCtx, {
         labels: ['Disbursed', 'Remaining'],
         datasets: [{
             data: [utilizationData.disbursed, remainingAmount],
-            backgroundColor: ['#0dcaf0', '#e9ecef'],
+            backgroundColor: ['#334EAC', '#D0E3FF'],
             borderWidth: 2,
-            borderColor: '#fff'
+            borderColor: '#FFF9F0'
         }]
     },
     options: {
@@ -259,7 +259,7 @@ new Chart(topResourcesCtx, {
         datasets: [{
             label: 'Applications',
             data: topResourcesData.map(r => r.count),
-            backgroundColor: '#0d6efd',
+            backgroundColor: ['#334EAC','#7096D1','#BAD6EB','#334EAC','#7096D1'],
             borderColor: '#0a58ca',
             borderWidth: 1
         }]
@@ -292,8 +292,8 @@ new Chart(peakSubmissionsCtx, {
         datasets: [{
             label: 'Submissions',
             data: peakSubmissionsData.map(p => p.count),
-            borderColor: '#198754',
-            backgroundColor: 'rgba(25, 135, 84, 0.1)',
+            borderColor: '#081F5C',
+            backgroundColor: 'rgba(112, 150, 209, 0.2)',
             borderWidth: 2,
             fill: true,
             tension: 0.4

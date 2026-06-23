@@ -132,4 +132,35 @@ class DashboardModel
 
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    /**
+     * [NEW] Thống kê hồ sơ cho Student Dashboard
+     */
+    public function getStudentStats(int $userId): array
+    {
+        $stmt = $this->db->prepare("
+            SELECT status, COUNT(*) as total 
+            FROM applications 
+            WHERE user_id = :user_id 
+            GROUP BY status
+        ");
+        $stmt->execute(['user_id' => $userId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * [NEW] Thống kê tiến độ chấm điểm cho Reviewer Dashboard
+     */
+    public function getReviewerStats(): array
+    {
+        // Đếm tổng số lượng hồ sơ dựa trên trạng thái để Reviewer biết tiến độ
+        $stmt = $this->db->query("
+            SELECT status, COUNT(*) as total 
+            FROM applications 
+            GROUP BY status
+        ");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    
 }
